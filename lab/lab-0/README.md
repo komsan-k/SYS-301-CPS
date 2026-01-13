@@ -1,4 +1,4 @@
-# Lab 1: Sensor → Decision → Actuator using ESP32 (Wokwi Simulation)
+# Lab 0: Sensor → Decision → Actuator using ESP32 (Wokwi Simulation)
 
 ## Overview
 This laboratory introduces the fundamental Cyber-Physical System (CPS) loop using an ESP32 simulated on Wokwi.
