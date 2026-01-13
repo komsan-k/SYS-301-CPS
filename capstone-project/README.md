@@ -54,7 +54,7 @@ The final report should include:
 2. CPS architecture and system overview
 3. Hardware and software design
 4. Control logic and feedback mechanism
-5. Digital twin or visualization (if applicable)
+5. Digital twin or visualization
 6. Results and discussion
 7. Challenges and lessons learned
 
