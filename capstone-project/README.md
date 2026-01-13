@@ -83,6 +83,6 @@ All project materials must be submitted through the **Learning Management System
 ---
 
 ## ✅ Notes
-- Team or individual projects are allowed (as specified by the instructor).
+- Individual projects are allowed (as specified by the instructor).
 - Students are encouraged to choose **realistic, real-world CPS applications**.
 - Proper documentation and diagrams are required.
