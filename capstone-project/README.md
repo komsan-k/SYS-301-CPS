@@ -12,7 +12,7 @@ Students must develop a **small-scale but functional CPS** that:
 - Applies **control or decision logic**
 - Drives **actuators** to affect the physical system
 - Demonstrates a **feedback loop**
-- (Recommended) Includes a **basic digital twin or visualization**
+- Includes a **basic digital twin or visualization**
 
 ---
 
