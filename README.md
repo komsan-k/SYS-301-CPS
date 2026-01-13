@@ -24,7 +24,7 @@ A **Cyber-Physical System (CPS)** is an intelligent system in which physical pro
 
 ---
 
-### 🎓 Coursera Certificate — **30%**
+### 🎓 Coursera Certificate — **20%**
 - **Course Title:** Cyber-Physical Systems: Modeling and Simulation
 - **Platform:** Coursera
 - **Submission Deadline:** **15 March** (upload certificate to LMS)
@@ -32,7 +32,7 @@ A **Cyber-Physical System (CPS)** is an intelligent system in which physical pro
 
 ---
 
-### 📝 Quiz and Assignments — **20%**
+### 📝 Quiz and Assignments — **30%**
 - Includes quizzes and short assignments conducted during the semester
 
 ---
@@ -54,6 +54,6 @@ This course applies **Norm-Referenced Grading**, where student performance is ev
 |----------------------|--------|
 | Laboratory Works     | 36%    |
 | Capstone Project     | 14%    |
-| Coursera Certificate | 30%    |
-| Quiz & Assignments   | 20%    |
+| Coursera Certificate | 20%    |
+| Quiz & Assignments   | 30%    |
 | **Total**            | **100%** |
