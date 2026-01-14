@@ -1,0 +1,102 @@
+[
+  {
+    "id": "f1a2b3c4d5e6a7b8",
+    "type": "tab",
+    "label": "CPS Lab 2 - MQTT Remote Actuator",
+    "disabled": false,
+    "info": "Lab 2: MQTT Subscribe → Remote Actuator Control"
+  },
+  {
+    "id": "bkr_lab2_hivemq",
+    "type": "mqtt-broker",
+    "name": "HiveMQ Public Broker",
+    "broker": "broker.hivemq.com",
+    "port": "1883",
+    "clientid": "NR_CPS_LAB2",
+    "usetls": false,
+    "protocolVersion": "4",
+    "keepalive": "60",
+    "cleansession": true
+  },
+  {
+    "id": "mqttin_ldr_lab2",
+    "type": "mqtt in",
+    "z": "f1a2b3c4d5e6a7b8",
+    "name": "LDR",
+    "topic": "cps/lab2/ldr",
+    "qos": "0",
+    "datatype": "auto",
+    "broker": "bkr_lab2_hivemq",
+    "x": 160,
+    "y": 120,
+    "wires": [["debug_ldr_lab2"]]
+  },
+  {
+    "id": "mqttin_state_lab2",
+    "type": "mqtt in",
+    "z": "f1a2b3c4d5e6a7b8",
+    "name": "State",
+    "topic": "cps/lab2/state",
+    "qos": "0",
+    "datatype": "auto",
+    "broker": "bkr_lab2_hivemq",
+    "x": 160,
+    "y": 180,
+    "wires": [["debug_state_lab2"]]
+  },
+  {
+    "id": "inject_on",
+    "type": "inject",
+    "z": "f1a2b3c4d5e6a7b8",
+    "name": "LED ON",
+    "payload": "ON",
+    "payloadType": "str",
+    "x": 160,
+    "y": 260,
+    "wires": [["mqttout_led"]]
+  },
+  {
+    "id": "inject_off",
+    "type": "inject",
+    "z": "f1a2b3c4d5e6a7b8",
+    "name": "LED OFF",
+    "payload": "OFF",
+    "payloadType": "str",
+    "x": 160,
+    "y": 310,
+    "wires": [["mqttout_led"]]
+  },
+  {
+    "id": "mqttout_led",
+    "type": "mqtt out",
+    "z": "f1a2b3c4d5e6a7b8",
+    "name": "LED Control",
+    "topic": "cps/lab2/led/set",
+    "broker": "bkr_lab2_hivemq",
+    "x": 480,
+    "y": 285,
+    "wires": []
+  },
+  {
+    "id": "debug_ldr_lab2",
+    "type": "debug",
+    "z": "f1a2b3c4d5e6a7b8",
+    "name": "Debug LDR",
+    "active": true,
+    "complete": "payload",
+    "x": 480,
+    "y": 120,
+    "wires": []
+  },
+  {
+    "id": "debug_state_lab2",
+    "type": "debug",
+    "z": "f1a2b3c4d5e6a7b8",
+    "name": "Debug State",
+    "active": true,
+    "complete": "payload",
+    "x": 480,
+    "y": 180,
+    "wires": []
+  }
+]
