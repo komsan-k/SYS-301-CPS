@@ -1,0 +1,506 @@
+[
+  {
+    "id": "tab_lab4",
+    "type": "tab",
+    "label": "CPS Lab 4 - TinyML + MQTT Dashboard",
+    "disabled": false,
+    "info": "Lab 4: TinyML + MQTT + Node-RED\nBroker: broker.hivemq.com:1883\nIN topics: cps/lab4/ldr, cps/lab4/pred, cps/lab4/prob, cps/lab4/led\nOUT topic: cps/lab4/led/set (ON/OFF)\nSupports manual control + optional auto-control based on TinyML prediction."
+  },
+  {
+    "id": "bkr_lab4_hivemq",
+    "type": "mqtt-broker",
+    "name": "HiveMQ Public Broker",
+    "broker": "broker.hivemq.com",
+    "port": "1883",
+    "clientid": "NR_CPS_LAB4",
+    "usetls": false,
+    "protocolVersion": "4",
+    "keepalive": "60",
+    "cleansession": true,
+    "autoConnect": true
+  },
+  {
+    "id": "ui_tab_lab4",
+    "type": "ui_tab",
+    "name": "CPS Lab 4",
+    "icon": "dashboard",
+    "disabled": false,
+    "hidden": false
+  },
+  {
+    "id": "ui_group_mon",
+    "type": "ui_group",
+    "name": "TinyML Monitor",
+    "tab": "ui_tab_lab4",
+    "order": 1,
+    "disp": true,
+    "width": "12",
+    "collapse": false,
+    "className": ""
+  },
+  {
+    "id": "ui_group_ctl",
+    "type": "ui_group",
+    "name": "Control (Manual / Auto)",
+    "tab": "ui_tab_lab4",
+    "order": 2,
+    "disp": true,
+    "width": "12",
+    "collapse": false,
+    "className": ""
+  },
+  {
+    "id": "mqttin_ldr_lab4",
+    "type": "mqtt in",
+    "z": "tab_lab4",
+    "name": "LDR (cps/lab4/ldr)",
+    "topic": "cps/lab4/ldr",
+    "qos": "0",
+    "datatype": "auto",
+    "broker": "bkr_lab4_hivemq",
+    "nl": false,
+    "rap": true,
+    "rh": 0,
+    "inputs": 0,
+    "x": 180,
+    "y": 120,
+    "wires": [
+      [
+        "fn_to_number_ldr_lab4",
+        "debug_ldr_lab4"
+      ]
+    ]
+  },
+  {
+    "id": "fn_to_number_ldr_lab4",
+    "type": "function",
+    "z": "tab_lab4",
+    "name": "Parse LDR to number",
+    "func": "var v = Number(msg.payload);\nif (isNaN(v)) return null;\nmsg.payload = v;\nreturn msg;",
+    "outputs": 1,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 450,
+    "y": 120,
+    "wires": [
+      [
+        "ui_gauge_ldr_lab4",
+        "ui_chart_ldr_lab4"
+      ]
+    ]
+  },
+  {
+    "id": "mqttin_pred_lab4",
+    "type": "mqtt in",
+    "z": "tab_lab4",
+    "name": "TinyML Pred (cps/lab4/pred)",
+    "topic": "cps/lab4/pred",
+    "qos": "0",
+    "datatype": "auto",
+    "broker": "bkr_lab4_hivemq",
+    "nl": false,
+    "rap": true,
+    "rh": 0,
+    "inputs": 0,
+    "x": 210,
+    "y": 180,
+    "wires": [
+      [
+        "ui_text_pred_lab4",
+        "fn_auto_control_lab4",
+        "debug_pred_lab4"
+      ]
+    ]
+  },
+  {
+    "id": "mqttin_prob_lab4",
+    "type": "mqtt in",
+    "z": "tab_lab4",
+    "name": "Confidence (cps/lab4/prob)",
+    "topic": "cps/lab4/prob",
+    "qos": "0",
+    "datatype": "auto",
+    "broker": "bkr_lab4_hivemq",
+    "nl": false,
+    "rap": true,
+    "rh": 0,
+    "inputs": 0,
+    "x": 210,
+    "y": 240,
+    "wires": [
+      [
+        "fn_parse_prob_lab4",
+        "debug_prob_lab4"
+      ]
+    ]
+  },
+  {
+    "id": "fn_parse_prob_lab4",
+    "type": "function",
+    "z": "tab_lab4",
+    "name": "Normalize confidence",
+    "func": "var v = Number(msg.payload);\nif (isNaN(v)) return null;\n// accept 0..1 or 0..100\nif (v <= 1) v = v * 100;\nmsg.payload = v;\nreturn msg;",
+    "outputs": 1,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 460,
+    "y": 240,
+    "wires": [
+      [
+        "ui_gauge_conf_lab4"
+      ]
+    ]
+  },
+  {
+    "id": "mqttin_led_lab4",
+    "type": "mqtt in",
+    "z": "tab_lab4",
+    "name": "LED Status (cps/lab4/led)",
+    "topic": "cps/lab4/led",
+    "qos": "0",
+    "datatype": "auto",
+    "broker": "bkr_lab4_hivemq",
+    "nl": false,
+    "rap": true,
+    "rh": 0,
+    "inputs": 0,
+    "x": 210,
+    "y": 300,
+    "wires": [
+      [
+        "ui_text_led_lab4",
+        "debug_led_lab4"
+      ]
+    ]
+  },
+  {
+    "id": "ui_gauge_ldr_lab4",
+    "type": "ui_gauge",
+    "z": "tab_lab4",
+    "name": "LDR Gauge",
+    "group": "ui_group_mon",
+    "order": 1,
+    "width": 6,
+    "height": 4,
+    "gtype": "gage",
+    "title": "LDR (ADC)",
+    "label": "raw",
+    "format": "{{value}}",
+    "min": 0,
+    "max": 4095,
+    "seg1": "",
+    "seg2": "",
+    "x": 710,
+    "y": 100,
+    "wires": []
+  },
+  {
+    "id": "ui_chart_ldr_lab4",
+    "type": "ui_chart",
+    "z": "tab_lab4",
+    "name": "LDR Trend",
+    "group": "ui_group_mon",
+    "order": 2,
+    "width": 6,
+    "height": 4,
+    "label": "LDR Trend",
+    "chartType": "line",
+    "legend": "false",
+    "xformat": "HH:mm:ss",
+    "interpolate": "linear",
+    "nodata": "No data",
+    "dot": false,
+    "ymin": "0",
+    "ymax": "4095",
+    "removeOlder": "2",
+    "removeOlderPoints": "",
+    "removeOlderUnit": "3600",
+    "cutout": 0,
+    "useOneColor": false,
+    "useUTC": false,
+    "colors": [],
+    "outputs": 1,
+    "useDifferentColor": false,
+    "x": 710,
+    "y": 150,
+    "wires": [
+      []
+    ]
+  },
+  {
+    "id": "ui_text_pred_lab4",
+    "type": "ui_text",
+    "z": "tab_lab4",
+    "group": "ui_group_mon",
+    "order": 3,
+    "width": 6,
+    "height": 1,
+    "name": "Prediction Text",
+    "label": "Prediction",
+    "format": "{{msg.payload}}",
+    "layout": "row-spread",
+    "x": 720,
+    "y": 200,
+    "wires": []
+  },
+  {
+    "id": "ui_gauge_conf_lab4",
+    "type": "ui_gauge",
+    "z": "tab_lab4",
+    "name": "Confidence Gauge",
+    "group": "ui_group_mon",
+    "order": 4,
+    "width": 6,
+    "height": 4,
+    "gtype": "gage",
+    "title": "Confidence",
+    "label": "%",
+    "format": "{{value}}",
+    "min": 0,
+    "max": 100,
+    "seg1": "",
+    "seg2": "",
+    "x": 720,
+    "y": 250,
+    "wires": []
+  },
+  {
+    "id": "ui_text_led_lab4",
+    "type": "ui_text",
+    "z": "tab_lab4",
+    "group": "ui_group_mon",
+    "order": 5,
+    "width": 6,
+    "height": 1,
+    "name": "LED Status Text",
+    "label": "LED Status",
+    "format": "{{msg.payload}}",
+    "layout": "row-spread",
+    "x": 725,
+    "y": 310,
+    "wires": []
+  },
+  {
+    "id": "ui_switch_auto_lab4",
+    "type": "ui_switch",
+    "z": "tab_lab4",
+    "name": "Auto Control Enable",
+    "label": "Auto control (TinyML)",
+    "group": "ui_group_ctl",
+    "order": 1,
+    "width": 6,
+    "height": 1,
+    "passthru": true,
+    "decouple": "false",
+    "topic": "auto_enable",
+    "style": "",
+    "onvalue": "true",
+    "onvalueType": "bool",
+    "offvalue": "false",
+    "offvalueType": "bool",
+    "x": 200,
+    "y": 420,
+    "wires": [
+      [
+        "fn_set_auto_enable_lab4",
+        "debug_auto_lab4"
+      ]
+    ]
+  },
+  {
+    "id": "fn_set_auto_enable_lab4",
+    "type": "function",
+    "z": "tab_lab4",
+    "name": "Store auto enable",
+    "func": "flow.set('lab4_auto_enable', !!msg.payload);\nreturn msg;",
+    "outputs": 1,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 470,
+    "y": 420,
+    "wires": [
+      []
+    ]
+  },
+  {
+    "id": "ui_switch_manual_led_lab4",
+    "type": "ui_switch",
+    "z": "tab_lab4",
+    "name": "Manual LED Control",
+    "label": "Manual LED",
+    "group": "ui_group_ctl",
+    "order": 2,
+    "width": 6,
+    "height": 1,
+    "passthru": true,
+    "decouple": "false",
+    "topic": "",
+    "style": "",
+    "onvalue": "true",
+    "onvalueType": "bool",
+    "offvalue": "false",
+    "offvalueType": "bool",
+    "x": 190,
+    "y": 480,
+    "wires": [
+      [
+        "fn_manual_to_cmd_lab4",
+        "debug_cmd_lab4"
+      ]
+    ]
+  },
+  {
+    "id": "fn_manual_to_cmd_lab4",
+    "type": "function",
+    "z": "tab_lab4",
+    "name": "Manual \u2192 ON/OFF",
+    "func": "msg.payload = msg.payload ? 'ON' : 'OFF';\nmsg.topic = 'cps/lab4/led/set';\nreturn msg;",
+    "outputs": 1,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 450,
+    "y": 480,
+    "wires": [
+      [
+        "mqttout_ledset_lab4"
+      ]
+    ]
+  },
+  {
+    "id": "fn_auto_control_lab4",
+    "type": "function",
+    "z": "tab_lab4",
+    "name": "Auto control from prediction",
+    "func": "// Auto-control policy example:\n// If prediction == 'DARK' => LED ON\n// If prediction == 'BRIGHT' => LED OFF\n// Only runs when Auto control is enabled.\n\nvar enabled = flow.get('lab4_auto_enable') || false;\nif (!enabled) return null;\n\nvar pred = ('' + msg.payload).trim().toUpperCase();\nvar cmd = null;\nif (pred === 'DARK') cmd = 'ON';\nif (pred === 'BRIGHT') cmd = 'OFF';\n\nif (cmd === null) return null;\nmsg.payload = cmd;\nmsg.topic = 'cps/lab4/led/set';\nreturn msg;",
+    "outputs": 1,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 500,
+    "y": 180,
+    "wires": [
+      [
+        "mqttout_ledset_lab4",
+        "debug_auto_cmd_lab4"
+      ]
+    ]
+  },
+  {
+    "id": "mqttout_ledset_lab4",
+    "type": "mqtt out",
+    "z": "tab_lab4",
+    "name": "Publish \u2192 cps/lab4/led/set",
+    "topic": "cps/lab4/led/set",
+    "qos": "",
+    "retain": "",
+    "respTopic": "",
+    "contentType": "",
+    "userProps": "",
+    "correl": "",
+    "expiry": "",
+    "broker": "bkr_lab4_hivemq",
+    "x": 730,
+    "y": 460,
+    "wires": []
+  },
+  {
+    "id": "debug_ldr_lab4",
+    "type": "debug",
+    "z": "tab_lab4",
+    "name": "Debug LDR",
+    "active": true,
+    "tosidebar": true,
+    "complete": "payload",
+    "targetType": "msg",
+    "x": 460,
+    "y": 80,
+    "wires": []
+  },
+  {
+    "id": "debug_pred_lab4",
+    "type": "debug",
+    "z": "tab_lab4",
+    "name": "Debug Prediction",
+    "active": true,
+    "tosidebar": true,
+    "complete": "payload",
+    "targetType": "msg",
+    "x": 470,
+    "y": 210,
+    "wires": []
+  },
+  {
+    "id": "debug_prob_lab4",
+    "type": "debug",
+    "z": "tab_lab4",
+    "name": "Debug Confidence",
+    "active": true,
+    "tosidebar": true,
+    "complete": "payload",
+    "targetType": "msg",
+    "x": 480,
+    "y": 270,
+    "wires": []
+  },
+  {
+    "id": "debug_led_lab4",
+    "type": "debug",
+    "z": "tab_lab4",
+    "name": "Debug LED Status",
+    "active": true,
+    "tosidebar": true,
+    "complete": "payload",
+    "targetType": "msg",
+    "x": 500,
+    "y": 320,
+    "wires": []
+  },
+  {
+    "id": "debug_auto_lab4",
+    "type": "debug",
+    "z": "tab_lab4",
+    "name": "Debug Auto Enable",
+    "active": true,
+    "tosidebar": true,
+    "complete": "payload",
+    "targetType": "msg",
+    "x": 720,
+    "y": 420,
+    "wires": []
+  },
+  {
+    "id": "debug_cmd_lab4",
+    "type": "debug",
+    "z": "tab_lab4",
+    "name": "Debug Manual Command",
+    "active": true,
+    "tosidebar": true,
+    "complete": "payload",
+    "targetType": "msg",
+    "x": 720,
+    "y": 510,
+    "wires": []
+  },
+  {
+    "id": "debug_auto_cmd_lab4",
+    "type": "debug",
+    "z": "tab_lab4",
+    "name": "Debug Auto Command",
+    "active": true,
+    "tosidebar": true,
+    "complete": "payload",
+    "targetType": "msg",
+    "x": 760,
+    "y": 180,
+    "wires": []
+  }
+]
