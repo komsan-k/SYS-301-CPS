@@ -1,0 +1,260 @@
+[
+  {
+    "id": "tab7",
+    "type": "tab",
+    "label": "Lab7 - HIL Prototype",
+    "disabled": false,
+    "info": ""
+  },
+  {
+    "id": "broker7",
+    "type": "mqtt-broker",
+    "name": "LocalBroker",
+    "broker": "localhost",
+    "port": "1883",
+    "clientid": "",
+    "usetls": false,
+    "protocolVersion": "4",
+    "keepalive": "60",
+    "cleansession": true,
+    "autoConnect": true,
+    "birthTopic": "",
+    "birthQos": "0",
+    "birthPayload": "",
+    "closeTopic": "",
+    "closeQos": "0",
+    "closePayload": "",
+    "willTopic": "",
+    "willQos": "0",
+    "willPayload": ""
+  },
+  {
+    "id": "inj_sim",
+    "type": "inject",
+    "z": "tab7",
+    "name": "Simulated Sensor",
+    "props": [
+      {
+        "p": "payload"
+      }
+    ],
+    "repeat": "",
+    "crontab": "",
+    "once": false,
+    "onceDelay": 0.1,
+    "topic": "",
+    "payload": "25",
+    "payloadType": "num",
+    "x": 170,
+    "y": 120,
+    "wires": [
+      [
+        "fn_sim"
+      ]
+    ]
+  },
+  {
+    "id": "fn_sim",
+    "type": "function",
+    "z": "tab7",
+    "name": "tag SIM",
+    "func": "// Expect msg.payload as number\nlet v = Number(msg.payload);\n// For ui_chart multi-series, set msg.topic to series name and payload numeric\nmsg.topic = \"SIM\";\nmsg.payload = v;\nreturn msg;",
+    "outputs": 1,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 370,
+    "y": 120,
+    "wires": [
+      [
+        "chart7",
+        "fn_ctrl",
+        "dbg7"
+      ]
+    ]
+  },
+  {
+    "id": "mqin_real",
+    "type": "mqtt in",
+    "z": "tab7",
+    "name": "Real Sensor (JSON)",
+    "topic": "/cps/sensors/real",
+    "qos": "0",
+    "datatype": "auto",
+    "broker": "broker7",
+    "nl": false,
+    "rap": true,
+    "rh": 0,
+    "x": 180,
+    "y": 200,
+    "wires": [
+      [
+        "json_real",
+        "dbg7"
+      ]
+    ]
+  },
+  {
+    "id": "json_real",
+    "type": "json",
+    "z": "tab7",
+    "name": "Parse JSON",
+    "property": "payload",
+    "action": "",
+    "pretty": false,
+    "x": 380,
+    "y": 200,
+    "wires": [
+      [
+        "fn_real"
+      ]
+    ]
+  },
+  {
+    "id": "fn_real",
+    "type": "function",
+    "z": "tab7",
+    "name": "tag REAL",
+    "func": "// Expect msg.payload like {value: 25} OR {t: 25}\nlet v = (msg.payload && (msg.payload.value ?? msg.payload.t)) ?? msg.payload;\nv = Number(v);\nmsg.topic = \"REAL\";\nmsg.payload = v;\nreturn msg;",
+    "outputs": 1,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 560,
+    "y": 200,
+    "wires": [
+      [
+        "chart7",
+        "dbg7"
+      ]
+    ]
+  },
+  {
+    "id": "fn_ctrl",
+    "type": "function",
+    "z": "tab7",
+    "name": "control: SIM > 30",
+    "func": "// Control based on SIM series (incoming msg.payload numeric)\n// LED ON if value > 30 else OFF\nlet v = Number(msg.payload);\nlet cmd = (v > 30) ? \"ON\" : \"OFF\";\nmsg.topic = \"/cps/cmd/led\";\nmsg.payload = cmd;\nreturn msg;",
+    "outputs": 1,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 610,
+    "y": 120,
+    "wires": [
+      [
+        "mqout_led",
+        "status7",
+        "dbg7"
+      ]
+    ]
+  },
+  {
+    "id": "mqout_led",
+    "type": "mqtt out",
+    "z": "tab7",
+    "name": "LED cmd",
+    "topic": "/cps/cmd/led",
+    "qos": "",
+    "retain": "",
+    "broker": "broker7",
+    "x": 860,
+    "y": 120,
+    "wires": []
+  },
+  {
+    "id": "status7",
+    "type": "ui_text",
+    "z": "tab7",
+    "group": "uigrp7",
+    "order": 2,
+    "width": 0,
+    "height": 0,
+    "name": "",
+    "label": "LED Command",
+    "format": "{{msg.payload}}",
+    "layout": "row-spread",
+    "x": 860,
+    "y": 180,
+    "wires": []
+  },
+  {
+    "id": "chart7",
+    "type": "ui_chart",
+    "z": "tab7",
+    "group": "uigrp7",
+    "order": 1,
+    "width": 0,
+    "height": 0,
+    "label": "Sim vs Real",
+    "chartType": "line",
+    "legend": "true",
+    "xformat": "HH:mm:ss",
+    "interpolate": "linear",
+    "nodata": "",
+    "dot": false,
+    "ymin": "0",
+    "ymax": "50",
+    "removeOlder": "1",
+    "removeOlderPoints": "300",
+    "removeOlderUnit": "3600",
+    "cutout": 0,
+    "useOneColor": false,
+    "colors": [
+      "#1f77b4",
+      "#ff7f0e",
+      "#2ca02c",
+      "#d62728",
+      "#9467bd",
+      "#8c564b",
+      "#e377c2",
+      "#7f7f7f",
+      "#bcbd22",
+      "#17becf"
+    ],
+    "outputs": 1,
+    "x": 610,
+    "y": 260,
+    "wires": [
+      []
+    ]
+  },
+  {
+    "id": "dbg7",
+    "type": "debug",
+    "z": "tab7",
+    "name": "debug",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": false,
+    "complete": "true",
+    "targetType": "full",
+    "statusVal": "",
+    "statusType": "auto",
+    "x": 610,
+    "y": 320,
+    "wires": []
+  },
+  {
+    "id": "uigrp7",
+    "type": "ui_group",
+    "name": "Lab7",
+    "tab": "uitab7",
+    "order": 1,
+    "disp": true,
+    "width": "8",
+    "collapse": false
+  },
+  {
+    "id": "uitab7",
+    "type": "ui_tab",
+    "name": "CPS Labs",
+    "icon": "dashboard",
+    "disabled": false,
+    "hidden": false
+  }
+]
