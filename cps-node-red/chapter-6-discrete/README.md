@@ -107,6 +107,52 @@ This bang-bang controller maintains temperature within a safe band.
 ## Lab Procedure
 
 ### 1. Sensor → MQTT
+```cpp
+#include <WiFi.h>
+#include <PubSubClient.h>
+
+const char* WIFI_SSID="YOUR_WIFI";
+const char* WIFI_PASS="YOUR_PASS";
+const char* MQTT_HOST="192.168.1.10";
+const int MQTT_PORT=1883;
+
+const int FAN_PIN = 5;
+
+WiFiClient espClient;
+PubSubClient mqtt(espClient);
+
+void wifiConnect(){ WiFi.begin(WIFI_SSID, WIFI_PASS); while(WiFi.status()!=WL_CONNECTED) delay(300); }
+void mqttConnect(){ mqtt.setServer(MQTT_HOST,MQTT_PORT); while(!mqtt.connected()){ mqtt.connect("esp32-room"); mqtt.subscribe("/cps/cmd/fan"); delay(500);} }
+
+void callback(char* topic, byte* payload, unsigned int len){
+  String data((char*)payload,len);
+  if(String(topic)=="/cps/cmd/fan"){
+    digitalWrite(FAN_PIN, data=="ON"?HIGH:LOW);
+  }
+}
+
+float readRoomTemp(){ return 25.0 + 10.0*sin(millis()/5000.0); } // demo
+
+void setup(){
+  pinMode(FAN_PIN,OUTPUT);
+  wifiConnect();
+  mqtt.setCallback(callback);
+  mqttConnect();
+}
+
+void loop(){
+  if(WiFi.status()!=WL_CONNECTED) wifiConnect();
+  if(!mqtt.connected()) mqttConnect();
+
+  float t=readRoomTemp();
+  char buf[64];
+  snprintf(buf,sizeof(buf),"{\"t\":%.2f}",t);
+  mqtt.publish("/cps/temp/room",buf);
+
+  mqtt.loop();
+  delay(1000);
+}
+```
 ESP32 publishes temperature to:
 ```
 /cps/temp/room
