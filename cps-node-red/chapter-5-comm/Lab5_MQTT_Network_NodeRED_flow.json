@@ -1,0 +1,198 @@
+[
+  {
+    "id": "tab5",
+    "type": "tab",
+    "label": "Lab5 - MQTT Network",
+    "disabled": false,
+    "info": ""
+  },
+  {
+    "id": "broker5",
+    "type": "mqtt-broker",
+    "name": "LocalBroker",
+    "broker": "localhost",
+    "port": "1883",
+    "clientid": "",
+    "usetls": false,
+    "protocolVersion": "4",
+    "keepalive": "60",
+    "cleansession": true,
+    "autoConnect": true,
+    "birthTopic": "",
+    "birthQos": "0",
+    "birthPayload": "",
+    "closeTopic": "",
+    "closeQos": "0",
+    "closePayload": "",
+    "willTopic": "",
+    "willQos": "0",
+    "willPayload": ""
+  },
+  {
+    "id": "mqin5",
+    "type": "mqtt in",
+    "z": "tab5",
+    "name": "Room Temp (JSON)",
+    "topic": "/cps/temp/room",
+    "qos": "0",
+    "datatype": "auto",
+    "broker": "broker5",
+    "nl": false,
+    "rap": true,
+    "rh": 0,
+    "x": 190,
+    "y": 160,
+    "wires": [
+      [
+        "json5",
+        "dbg5"
+      ]
+    ]
+  },
+  {
+    "id": "json5",
+    "type": "json",
+    "z": "tab5",
+    "name": "Parse JSON",
+    "property": "payload",
+    "action": "",
+    "pretty": false,
+    "x": 390,
+    "y": 160,
+    "wires": [
+      [
+        "gauge5",
+        "chg5"
+      ]
+    ]
+  },
+  {
+    "id": "chg5",
+    "type": "change",
+    "z": "tab5",
+    "name": "payload = payload.t (for chart)",
+    "rules": [
+      {
+        "t": "set",
+        "p": "payload",
+        "pt": "msg",
+        "to": "payload.t",
+        "tot": "msg"
+      }
+    ],
+    "action": "",
+    "property": "",
+    "from": "",
+    "to": "",
+    "reg": false,
+    "x": 650,
+    "y": 220,
+    "wires": [
+      [
+        "chart5"
+      ]
+    ]
+  },
+  {
+    "id": "gauge5",
+    "type": "ui_gauge",
+    "z": "tab5",
+    "group": "uigrp5",
+    "order": 1,
+    "width": 0,
+    "height": 0,
+    "gtype": "gage",
+    "title": "Room Temperature",
+    "label": "°C",
+    "format": "{{msg.payload.t}}",
+    "min": "0",
+    "max": "50",
+    "colors": [
+      "#00b500",
+      "#e6e600",
+      "#ca3838"
+    ],
+    "seg1": "",
+    "seg2": "",
+    "x": 650,
+    "y": 120,
+    "wires": []
+  },
+  {
+    "id": "chart5",
+    "type": "ui_chart",
+    "z": "tab5",
+    "group": "uigrp5",
+    "order": 2,
+    "width": 0,
+    "height": 0,
+    "label": "Temperature Trend",
+    "chartType": "line",
+    "legend": "false",
+    "xformat": "HH:mm:ss",
+    "interpolate": "linear",
+    "nodata": "",
+    "dot": false,
+    "ymin": "0",
+    "ymax": "50",
+    "removeOlder": "1",
+    "removeOlderPoints": "300",
+    "removeOlderUnit": "3600",
+    "cutout": 0,
+    "useOneColor": false,
+    "colors": [
+      "#1f77b4",
+      "#aec7e8",
+      "#ff7f0e",
+      "#2ca02c",
+      "#d62728",
+      "#9467bd",
+      "#8c564b",
+      "#e377c2",
+      "#7f7f7f",
+      "#bcbd22",
+      "#17becf"
+    ],
+    "outputs": 1,
+    "x": 920,
+    "y": 220,
+    "wires": [
+      []
+    ]
+  },
+  {
+    "id": "dbg5",
+    "type": "debug",
+    "z": "tab5",
+    "name": "debug (full msg)",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": false,
+    "complete": "true",
+    "targetType": "full",
+    "statusVal": "",
+    "statusType": "auto",
+    "x": 420,
+    "y": 260,
+    "wires": []
+  },
+  {
+    "id": "uigrp5",
+    "type": "ui_group",
+    "name": "Lab5",
+    "tab": "uitab5",
+    "order": 1,
+    "disp": true,
+    "width": "8",
+    "collapse": false
+  },
+  {
+    "id": "uitab5",
+    "type": "ui_tab",
+    "name": "CPS Labs",
+    "icon": "dashboard",
+    "disabled": false,
+    "hidden": false
+  }
+]
