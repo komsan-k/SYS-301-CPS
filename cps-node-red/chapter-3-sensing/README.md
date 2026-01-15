@@ -106,8 +106,8 @@ Modern CPS often use distributed sensor networks:
 |------|--------|
 | 3.3V | VCC |
 | GND  | GND |
-| GPIO21 | SDA |
-| GPIO22 | SCL |
+| GPIO4 | SDA |
+| GPIO5 | SCL |
 
 ### 2. ESP32 → MQTT
 - Read sensor via I²C
@@ -145,7 +145,7 @@ Modern CPS often use distributed sensor networks:
 
 const char* WIFI_SSID = "YOUR_WIFI";
 const char* WIFI_PASS = "YOUR_PASS";
-const char* MQTT_HOST = "192.168.1.10";
+const char* MQTT_HOST = "broker.hivemq.com";
 const int MQTT_PORT = 1883;
 
 WiFiClient espClient;
@@ -166,7 +166,7 @@ void mqttConnect(){
 
 void setup(){
   Serial.begin(115200);
-  Wire.begin();
+  Wire.begin(4, 5);
   wifiConnect();
   mqttConnect();
 }
