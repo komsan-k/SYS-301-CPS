@@ -1,0 +1,198 @@
+[
+  {
+    "id": "tab3",
+    "type": "tab",
+    "label": "Lab3 - Sensor → MQTT → Dashboard",
+    "disabled": false,
+    "info": ""
+  },
+  {
+    "id": "broker1",
+    "type": "mqtt-broker",
+    "name": "LocalBroker",
+    "broker": "localhost",
+    "port": "1883",
+    "clientid": "",
+    "usetls": false,
+    "protocolVersion": "4",
+    "keepalive": "60",
+    "cleansession": true,
+    "autoConnect": true,
+    "birthTopic": "",
+    "birthQos": "0",
+    "birthPayload": "",
+    "closeTopic": "",
+    "closeQos": "0",
+    "closePayload": "",
+    "willTopic": "",
+    "willQos": "0",
+    "willPayload": ""
+  },
+  {
+    "id": "mqin1",
+    "type": "mqtt in",
+    "z": "tab3",
+    "name": "Sensor data (JSON)",
+    "topic": "/cps/sensors/data",
+    "qos": "0",
+    "datatype": "auto",
+    "broker": "broker1",
+    "nl": false,
+    "rap": true,
+    "rh": 0,
+    "x": 180,
+    "y": 140,
+    "wires": [
+      [
+        "json3",
+        "dbg3"
+      ]
+    ]
+  },
+  {
+    "id": "json3",
+    "type": "json",
+    "z": "tab3",
+    "name": "Parse JSON",
+    "property": "payload",
+    "action": "",
+    "pretty": false,
+    "x": 380,
+    "y": 140,
+    "wires": [
+      [
+        "gauge3",
+        "chg3"
+      ]
+    ]
+  },
+  {
+    "id": "dbg3",
+    "type": "debug",
+    "z": "tab3",
+    "name": "debug (full msg)",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": false,
+    "complete": "true",
+    "targetType": "full",
+    "statusVal": "",
+    "statusType": "auto",
+    "x": 390,
+    "y": 220,
+    "wires": []
+  },
+  {
+    "id": "gauge3",
+    "type": "ui_gauge",
+    "z": "tab3",
+    "group": "uigrp3",
+    "order": 1,
+    "width": 0,
+    "height": 0,
+    "gtype": "gage",
+    "title": "Sensor Value",
+    "label": "units",
+    "format": "{{msg.payload.value}}",
+    "min": "0",
+    "max": "100",
+    "colors": [
+      "#00b500",
+      "#e6e600",
+      "#ca3838"
+    ],
+    "seg1": "",
+    "seg2": "",
+    "x": 600,
+    "y": 110,
+    "wires": []
+  },
+  {
+    "id": "chg3",
+    "type": "change",
+    "z": "tab3",
+    "name": "payload = payload.value (for chart)",
+    "rules": [
+      {
+        "t": "set",
+        "p": "payload",
+        "pt": "msg",
+        "to": "payload.value",
+        "tot": "msg"
+      }
+    ],
+    "action": "",
+    "property": "",
+    "from": "",
+    "to": "",
+    "reg": false,
+    "x": 630,
+    "y": 200,
+    "wires": [
+      [
+        "chart3"
+      ]
+    ]
+  },
+  {
+    "id": "chart3",
+    "type": "ui_chart",
+    "z": "tab3",
+    "group": "uigrp3",
+    "order": 2,
+    "width": 0,
+    "height": 0,
+    "label": "Sensor Time Series",
+    "chartType": "line",
+    "legend": "false",
+    "xformat": "HH:mm:ss",
+    "interpolate": "linear",
+    "nodata": "",
+    "dot": false,
+    "ymin": "0",
+    "ymax": "100",
+    "removeOlder": "1",
+    "removeOlderPoints": "300",
+    "removeOlderUnit": "3600",
+    "cutout": 0,
+    "useOneColor": false,
+    "colors": [
+      "#1f77b4",
+      "#aec7e8",
+      "#ff7f0e",
+      "#2ca02c",
+      "#d62728",
+      "#9467bd",
+      "#8c564b",
+      "#e377c2",
+      "#7f7f7f",
+      "#bcbd22",
+      "#17becf"
+    ],
+    "outputs": 1,
+    "x": 860,
+    "y": 200,
+    "wires": [
+      []
+    ]
+  },
+  {
+    "id": "uigrp3",
+    "type": "ui_group",
+    "name": "Lab3",
+    "tab": "uitab3",
+    "order": 1,
+    "disp": true,
+    "width": "8",
+    "collapse": false
+  },
+  {
+    "id": "uitab3",
+    "type": "ui_tab",
+    "name": "CPS Labs",
+    "icon": "dashboard",
+    "disabled": false,
+    "hidden": false
+  }
+]
