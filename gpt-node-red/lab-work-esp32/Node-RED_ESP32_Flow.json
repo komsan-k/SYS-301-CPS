@@ -1,0 +1,266 @@
+[
+  {
+    "id": "tab1",
+    "type": "tab",
+    "label": "ESP32 → GPT → Dashboard",
+    "disabled": false,
+    "info": ""
+  },
+  {
+    "id": "mqtt_in",
+    "type": "mqtt in",
+    "z": "tab1",
+    "name": "MQTT IN: cps/esp32/sensor",
+    "topic": "cps/esp32/sensor",
+    "qos": "0",
+    "datatype": "auto",
+    "broker": "mqtt_broker",
+    "nl": false,
+    "rap": true,
+    "rh": 0,
+    "inputs": 0,
+    "x": 180,
+    "y": 100,
+    "wires": [
+      [
+        "json_parse",
+        "dbg_raw"
+      ]
+    ]
+  },
+  {
+    "id": "json_parse",
+    "type": "json",
+    "z": "tab1",
+    "name": "Parse JSON",
+    "property": "payload",
+    "action": "",
+    "pretty": false,
+    "x": 380,
+    "y": 100,
+    "wires": [
+      [
+        "prep_dashboard",
+        "rolling_stats"
+      ]
+    ]
+  },
+  {
+    "id": "prep_dashboard",
+    "type": "function",
+    "z": "tab1",
+    "name": "To Dashboard (value + chart)",
+    "func": "// Expect msg.payload = {device, ts, ldr}\nconst p = msg.payload || {};\n\n// For gauge/text\nlet out1 = { payload: p.ldr, topic: p.device || \"esp32\" };\n\n// For chart: payload as number, topic as series name\nlet out2 = { payload: p.ldr, topic: (p.device || \"esp32\") + \":ldr\" };\n\nreturn [out1, out2];",
+    "outputs": 2,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 640,
+    "y": 80,
+    "wires": [
+      [
+        "ui_gauge_ldr",
+        "ui_text_ldr"
+      ],
+      [
+        "ui_chart_ldr"
+      ]
+    ]
+  },
+  {
+    "id": "rolling_stats",
+    "type": "function",
+    "z": "tab1",
+    "name": "Rolling window + GPT prompt",
+    "func": "// Keep last N readings in flow context\nconst N = 20;\nconst p = msg.payload || {};\nconst v = Number(p.ldr);\n\nlet arr = flow.get(\"ldr_window\") || [];\nif (!Number.isNaN(v)) {\n  arr.push(v);\n  if (arr.length > N) arr.shift();\n}\nflow.set(\"ldr_window\", arr);\n\n// Compute simple stats\nconst min = Math.min(...arr);\nconst max = Math.max(...arr);\nconst avg = arr.reduce((a,b)=>a+b,0) / (arr.length || 1);\n\n// Trend: compare last vs first\nlet trend = \"stable\";\nif (arr.length >= 6) {\n  const delta = arr[arr.length-1] - arr[0];\n  if (delta > 80) trend = \"increasing\";\n  else if (delta < -80) trend = \"decreasing\";\n}\n\n// Build prompt for GPT\nmsg.topic = \"gpt4o\"; // model selector used by this contrib node\nmsg.payload = [\n  \"You are a CPS monitoring assistant.\",\n  \"Summarize the sensor status in 1-2 short sentences.\",\n  \"Use simple words for students.\",\n  \"Return ONLY the summary text.\",\n  \"\", \n  `Latest LDR: ${v}`,\n  `Window size: ${arr.length}`,\n  `Avg: ${avg.toFixed(1)}, Min: ${min}, Max: ${max}, Trend: ${trend}`\n].join(\"\\n\");\n\n// Optional tuning knobs (if supported by your node settings)\nmsg.temperature = 0.3;\nmsg.max_tokens = 80;\n\nreturn msg;",
+    "outputs": 1,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 670,
+    "y": 150,
+    "wires": [
+      [
+        "chatgpt_node"
+      ]
+    ]
+  },
+  {
+    "id": "chatgpt_node",
+    "type": "chatgpt",
+    "z": "tab1",
+    "name": "Custom ChatGPT Summary",
+    "x": 930,
+    "y": 150,
+    "wires": [
+      [
+        "ui_text_gpt",
+        "dbg_gpt"
+      ]
+    ]
+  },
+  {
+    "id": "ui_gauge_ldr",
+    "type": "ui_gauge",
+    "z": "tab1",
+    "name": "LDR Gauge",
+    "group": "ui_group",
+    "order": 1,
+    "width": 6,
+    "height": 4,
+    "gtype": "gage",
+    "title": "LDR (0–4095)",
+    "label": "ADC",
+    "format": "{{value}}",
+    "min": 0,
+    "max": "4095",
+    "colors": [
+      "#00b500",
+      "#e6e600",
+      "#ca3838"
+    ],
+    "seg1": "",
+    "seg2": "",
+    "x": 910,
+    "y": 60,
+    "wires": []
+  },
+  {
+    "id": "ui_text_ldr",
+    "type": "ui_text",
+    "z": "tab1",
+    "group": "ui_group",
+    "order": 2,
+    "width": 6,
+    "height": 1,
+    "name": "Latest LDR Text",
+    "label": "Latest",
+    "format": "{{msg.payload}}",
+    "layout": "row-spread",
+    "x": 930,
+    "y": 100,
+    "wires": []
+  },
+  {
+    "id": "ui_chart_ldr",
+    "type": "ui_chart",
+    "z": "tab1",
+    "name": "LDR Chart",
+    "group": "ui_group",
+    "order": 3,
+    "width": 12,
+    "height": 6,
+    "label": "LDR Trend",
+    "chartType": "line",
+    "legend": "false",
+    "xformat": "HH:mm:ss",
+    "interpolate": "linear",
+    "nodata": "Waiting for sensor…",
+    "dot": false,
+    "ymin": "0",
+    "ymax": "4095",
+    "removeOlder": "10",
+    "removeOlderPoints": "",
+    "removeOlderUnit": "60",
+    "cutout": 0,
+    "useOneColor": false,
+    "useUTC": false,
+    "x": 910,
+    "y": 140,
+    "wires": [
+      [],
+      []
+    ]
+  },
+  {
+    "id": "ui_text_gpt",
+    "type": "ui_text",
+    "z": "tab1",
+    "group": "ui_group",
+    "order": 4,
+    "width": 12,
+    "height": 2,
+    "name": "GPT Summary",
+    "label": "GPT Summary",
+    "format": "{{msg.payload}}",
+    "layout": "row-spread",
+    "x": 1170,
+    "y": 150,
+    "wires": []
+  },
+  {
+    "id": "dbg_raw",
+    "type": "debug",
+    "z": "tab1",
+    "name": "raw mqtt",
+    "active": false,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": false,
+    "complete": "payload",
+    "targetType": "msg",
+    "x": 390,
+    "y": 160,
+    "wires": []
+  },
+  {
+    "id": "dbg_gpt",
+    "type": "debug",
+    "z": "tab1",
+    "name": "gpt out",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": false,
+    "complete": "payload",
+    "targetType": "msg",
+    "x": 1170,
+    "y": 200,
+    "wires": []
+  },
+  {
+    "id": "mqtt_broker",
+    "type": "mqtt-broker",
+    "name": "Local Mosquitto",
+    "broker": "127.0.0.1",
+    "port": "1883",
+    "clientid": "",
+    "autoConnect": true,
+    "usetls": false,
+    "protocolVersion": "4",
+    "keepalive": "60",
+    "cleansession": true,
+    "birthTopic": "",
+    "birthQos": "0",
+    "birthRetain": "false",
+    "birthPayload": "",
+    "closeTopic": "",
+    "closeQos": "0",
+    "closeRetain": "false",
+    "closePayload": "",
+    "willTopic": "",
+    "willQos": "0",
+    "willRetain": "false",
+    "willPayload": ""
+  },
+  {
+    "id": "ui_tab",
+    "type": "ui_tab",
+    "name": "CPS Dashboard",
+    "icon": "dashboard",
+    "disabled": false,
+    "hidden": false
+  },
+  {
+    "id": "ui_group",
+    "type": "ui_group",
+    "name": "ESP32 Monitor",
+    "tab": "ui_tab",
+    "order": 1,
+    "disp": true,
+    "width": "12",
+    "collapse": false
+  }
+]
