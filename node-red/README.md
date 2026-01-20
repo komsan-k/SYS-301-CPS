@@ -94,8 +94,10 @@ Node-RED is a powerful and intuitive platform that bridges the gap between physi
 
 1. OpenJS Foundation, **Node-RED Documentation**,  
    https://nodered.org/docs
+2. Node RED Programming Guide, **Node-RED Documentation**,  
+   https://noderedguide.com/
 
-2. N. Dragoni et al., “Microservices: Yesterday, Today, and Tomorrow,” *Present and Ulterior Software Engineering*, Springer, 2017.
+3. N. Dragoni et al., “Microservices: Yesterday, Today, and Tomorrow,” *Present and Ulterior Software Engineering*, Springer, 2017.
 
 
 
