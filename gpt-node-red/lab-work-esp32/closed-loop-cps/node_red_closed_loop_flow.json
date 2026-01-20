@@ -1,0 +1,266 @@
+[
+  {
+    "id": "tab1",
+    "type": "tab",
+    "label": "Closed-Loop CPS (ESP32 \u2194 Node-RED)",
+    "disabled": false,
+    "info": ""
+  },
+  {
+    "id": "mqtt_in",
+    "type": "mqtt in",
+    "z": "tab1",
+    "name": "MQTT IN: cps/esp32/sensor",
+    "topic": "cps/esp32/sensor",
+    "qos": "0",
+    "datatype": "auto",
+    "broker": "mqtt_broker",
+    "nl": false,
+    "rap": true,
+    "rh": 0,
+    "inputs": 0,
+    "x": 180,
+    "y": 120,
+    "wires": [
+      [
+        "json_parse"
+      ]
+    ]
+  },
+  {
+    "id": "json_parse",
+    "type": "json",
+    "z": "tab1",
+    "name": "Parse JSON",
+    "property": "payload",
+    "action": "",
+    "pretty": false,
+    "x": 380,
+    "y": 120,
+    "wires": [
+      [
+        "dash_split",
+        "rule_decision",
+        "gpt_prep"
+      ]
+    ]
+  },
+  {
+    "id": "dash_split",
+    "type": "function",
+    "z": "tab1",
+    "name": "To Dashboard (value + chart)",
+    "func": "const p = msg.payload || {};\nconst out1 = { payload: Number(p.ldr), topic: p.device || 'esp32' };\nconst out2 = { payload: Number(p.ldr), topic: (p.device || 'esp32') + ':ldr' };\nreturn [out1, out2];",
+    "outputs": 2,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 650,
+    "y": 80,
+    "wires": [
+      [
+        "ui_gauge_ldr",
+        "ui_text_ldr"
+      ],
+      [
+        "ui_chart_ldr"
+      ]
+    ]
+  },
+  {
+    "id": "rule_decision",
+    "type": "function",
+    "z": "tab1",
+    "name": "Rule Decision (Hysteresis) \u2192 Actuator",
+    "func": "// Deterministic rule-based control\nconst TH_LOW  = 1200; // LED ON below this\nconst TH_HIGH = 1800; // LED OFF above this\nconst p = msg.payload || {};\nconst ldr = Number(p.ldr);\nconst device = p.device || 'esp32-01';\n\nlet ledState = flow.get('ledState');\nif (ledState !== 0 && ledState !== 1) ledState = 0;\n\nlet changed = false;\nlet reason = 'No change';\n\nif (ldr < TH_LOW && ledState === 0) {\n  ledState = 1;\n  reason = `Rule: LDR (${ldr}) < TH_LOW (${TH_LOW}) \u2192 LED ON`;\n  changed = true;\n} else if (ldr > TH_HIGH && ledState === 1) {\n  ledState = 0;\n  reason = `Rule: LDR (${ldr}) > TH_HIGH (${TH_HIGH}) \u2192 LED OFF`;\n  changed = true;\n}\n\nflow.set('ledState', ledState);\nif (!changed) return null; // publish only on change\n\nmsg.topic = 'cps/esp32/actuator';\nmsg.payload = { device, led: ledState, reason };\nreturn msg;",
+    "outputs": 1,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 660,
+    "y": 180,
+    "wires": [
+      [
+        "mqtt_out",
+        "ui_text_rule"
+      ]
+    ]
+  },
+  {
+    "id": "mqtt_out",
+    "type": "mqtt out",
+    "z": "tab1",
+    "name": "MQTT OUT: cps/esp32/actuator",
+    "topic": "cps/esp32/actuator",
+    "qos": "",
+    "retain": "",
+    "broker": "mqtt_broker",
+    "x": 980,
+    "y": 160,
+    "wires": []
+  },
+  {
+    "id": "ui_text_rule",
+    "type": "ui_text",
+    "z": "tab1",
+    "group": "ui_group",
+    "order": 5,
+    "width": 12,
+    "height": 1,
+    "name": "Rule Decision",
+    "label": "Rule Decision",
+    "format": "{{msg.payload.reason}}",
+    "layout": "row-spread",
+    "x": 990,
+    "y": 210,
+    "wires": []
+  },
+  {
+    "id": "gpt_prep",
+    "type": "function",
+    "z": "tab1",
+    "name": "GPT Explain (NO CONTROL)",
+    "func": "const p = msg.payload || {};\nconst v = Number(p.ldr);\nconst device = p.device || 'esp32-01';\nconst ledState = flow.get('ledState') || 0;\n\n// rolling window\nconst N = 20;\nlet arr = flow.get('ldr_window') || [];\nif (!Number.isNaN(v)) { arr.push(v); if (arr.length > N) arr.shift(); }\nflow.set('ldr_window', arr);\n\nconst min = Math.min(...arr);\nconst max = Math.max(...arr);\nconst avg = arr.reduce((a,b)=>a+b,0)/(arr.length||1);\nlet trend='stable';\nif (arr.length>=6) { const d=arr[arr.length-1]-arr[0]; if (d>80) trend='increasing'; else if (d<-80) trend='decreasing'; }\n\nmsg.topic='gpt4o';\nmsg.payload=[\n 'You are a CPS monitoring assistant.',\n 'Explain the situation in 1-2 short sentences for students.',\n 'Do NOT give control instructions.',\n 'Return ONLY the explanation text.',\n '',\n `Device: ${device}`,\n `Latest LDR: ${v}`,\n `Avg: ${avg.toFixed(1)}, Min: ${min}, Max: ${max}, Trend: ${trend}`,\n `LED (rule-based): ${ledState?'ON':'OFF'}`\n].join('\\n');\nmsg.temperature=0.3; msg.max_tokens=80; return msg;",
+    "outputs": 1,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 650,
+    "y": 300,
+    "wires": [
+      [
+        "chatgpt_node"
+      ]
+    ]
+  },
+  {
+    "id": "chatgpt_node",
+    "type": "chatgpt",
+    "z": "tab1",
+    "name": "GPT Summary (Explain Only)",
+    "x": 980,
+    "y": 300,
+    "wires": [
+      [
+        "ui_text_gpt"
+      ]
+    ]
+  },
+  {
+    "id": "ui_gauge_ldr",
+    "type": "ui_gauge",
+    "z": "tab1",
+    "group": "ui_group",
+    "order": 1,
+    "width": 6,
+    "height": 4,
+    "name": "LDR Gauge",
+    "gtype": "gage",
+    "title": "LDR (0\u20134095)",
+    "label": "ADC",
+    "format": "{{value}}",
+    "min": 0,
+    "max": "4095",
+    "colors": [
+      "#00b500",
+      "#e6e600",
+      "#ca3838"
+    ],
+    "x": 980,
+    "y": 60,
+    "wires": []
+  },
+  {
+    "id": "ui_text_ldr",
+    "type": "ui_text",
+    "z": "tab1",
+    "group": "ui_group",
+    "order": 2,
+    "width": 6,
+    "height": 1,
+    "name": "Latest LDR",
+    "label": "Latest",
+    "format": "{{msg.payload}}",
+    "layout": "row-spread",
+    "x": 980,
+    "y": 100,
+    "wires": []
+  },
+  {
+    "id": "ui_chart_ldr",
+    "type": "ui_chart",
+    "z": "tab1",
+    "group": "ui_group",
+    "order": 3,
+    "width": 12,
+    "height": 6,
+    "name": "LDR Chart",
+    "label": "LDR Trend",
+    "chartType": "line",
+    "legend": "false",
+    "xformat": "HH:mm:ss",
+    "interpolate": "linear",
+    "nodata": "Waiting for sensor\u2026",
+    "dot": false,
+    "ymin": "0",
+    "ymax": "4095",
+    "removeOlder": "10",
+    "removeOlderUnit": "60",
+    "useUTC": false,
+    "x": 980,
+    "y": 140,
+    "wires": [
+      [],
+      []
+    ]
+  },
+  {
+    "id": "ui_text_gpt",
+    "type": "ui_text",
+    "z": "tab1",
+    "group": "ui_group",
+    "order": 4,
+    "width": 12,
+    "height": 2,
+    "name": "GPT Summary",
+    "label": "GPT Explanation",
+    "format": "{{msg.payload}}",
+    "layout": "row-spread",
+    "x": 1220,
+    "y": 300,
+    "wires": []
+  },
+  {
+    "id": "mqtt_broker",
+    "type": "mqtt-broker",
+    "name": "Local Mosquitto",
+    "broker": "127.0.0.1",
+    "port": "1883",
+    "autoConnect": true,
+    "usetls": false,
+    "protocolVersion": "4",
+    "keepalive": "60",
+    "cleansession": true
+  },
+  {
+    "id": "ui_tab",
+    "type": "ui_tab",
+    "name": "CPS Dashboard",
+    "icon": "dashboard",
+    "disabled": false,
+    "hidden": false
+  },
+  {
+    "id": "ui_group",
+    "type": "ui_group",
+    "name": "ESP32 Monitor",
+    "tab": "ui_tab",
+    "order": 1,
+    "disp": true,
+    "width": "12",
+    "collapse": false
+  }
+]
