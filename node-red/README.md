@@ -88,9 +88,4 @@ Node-RED is particularly effective for education because:
 
 Node-RED is a powerful and intuitive platform that bridges the gap between physical systems and digital intelligence. Its flow-based paradigm makes it especially suitable for developing, testing, and teaching Cyber-Physical Systems and IoT applications.
 
----
 
-## Next Steps
-- Connect Node-RED to an ESP32 using MQTT
-- Build a real-time dashboard
-- Implement a Sensor → Decision → Actuator CPS loop
