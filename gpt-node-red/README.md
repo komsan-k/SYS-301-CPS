@@ -184,8 +184,4 @@ Deploy the flow and click **Ask** to see the generated response.
 - Educational chatbots for engineering courses  
 - AI-assisted monitoring and reporting systems  
 
----
 
-**Author / Instructor**  
-Assistant Professor Komsan Kanjanasit, PhD  
-College of Computing, Prince of Songkla University (Phuket)
