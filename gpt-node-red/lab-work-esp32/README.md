@@ -221,8 +221,4 @@ You will see:
 7. O. Givehchi et al., “Cyber-Physical Systems: Architecture, Design, and Applications,”
    *IEEE Industrial Electronics Magazine*, 2019.
 
----
 
-## Author / Instructor
-**Assistant Professor Komsan Kanjanasit, PhD**  
-College of Computing, Prince of Songkla University (Phuket)
