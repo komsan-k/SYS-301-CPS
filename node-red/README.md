@@ -97,10 +97,5 @@ Node-RED is a powerful and intuitive platform that bridges the gap between physi
 
 2. N. Dragoni et al., “Microservices: Yesterday, Today, and Tomorrow,” *Present and Ulterior Software Engineering*, Springer, 2017.
 
-3. L. Da Xu, W. He, and S. Li, “Internet of Things in Industries: A Survey,” *IEEE Transactions on Industrial Informatics*, vol. 10, no. 4, pp. 2233–2243, 2014.
-
-4. E. A. Lee, “Cyber Physical Systems: Design Challenges,” *11th IEEE International Symposium on Object-Oriented Real-Time Distributed Computing (ISORC)*, 2008.
-
-5. K. Jensen, L. Kristensen, and L. Wells, “Coloured Petri Nets and CPN Tools for Modelling and Validation of Concurrent Systems,” *International Journal on Software Tools for Technology Transfer*, 2007.
 
 
