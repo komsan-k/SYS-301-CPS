@@ -55,5 +55,3 @@ You will see:
 - Dashboard empty: ensure `node-red-dashboard` installed and open `/ui`
 - GPT not updating: confirm API key and that your model name in `msg.topic` works with your node config.
 
----
-Enjoy! If you want the closed-loop version (publish LED control back to ESP32), tell me.
