@@ -1,0 +1,286 @@
+[
+  {
+    "id": "0019b11bea6b5837",
+    "type": "mqtt-broker",
+    "name": "MQTT Broker",
+    "broker": "localhost",
+    "port": "1883",
+    "tls": "",
+    "clientid": "",
+    "usetls": false,
+    "protocolVersion": "4",
+    "keepalive": "60",
+    "cleansession": true,
+    "birthTopic": "",
+    "birthQos": "0",
+    "birthPayload": "",
+    "closeTopic": "",
+    "closeQos": "0",
+    "closePayload": "",
+    "willTopic": "",
+    "willQos": "0",
+    "willPayload": "",
+    "userProps": "",
+    "sessionExpiry": ""
+  },
+  {
+    "id": "3af777cb07d6896e",
+    "type": "ui_tab",
+    "name": "ESP32 CPS Labs",
+    "icon": "dashboard",
+    "disabled": false,
+    "hidden": false
+  },
+  {
+    "id": "e78548f11f9d20a6",
+    "type": "tab",
+    "label": "Lab 5 - Configuration (Override + Actuator Status)",
+    "disabled": false,
+    "info": "Send override commands to cps/esp32/override and visualize actuator status from cps/esp32/actuator."
+  },
+  {
+    "id": "addd418ef6906029",
+    "type": "ui_group",
+    "name": "Lab 5: Override",
+    "tab": "3af777cb07d6896e",
+    "order": 4,
+    "disp": true,
+    "width": "12",
+    "collapse": false
+  },
+  {
+    "id": "98759d2b61c38eb9",
+    "type": "ui_group",
+    "name": "Lab 5: Actuator Status",
+    "tab": "3af777cb07d6896e",
+    "order": 5,
+    "disp": true,
+    "width": "12",
+    "collapse": false
+  },
+  {
+    "id": "3d218342d01db28b",
+    "type": "ui_dropdown",
+    "z": "e78548f11f9d20a6",
+    "name": "Mode",
+    "label": "mode",
+    "tooltip": "AUTO or MANUAL",
+    "place": "select",
+    "group": "addd418ef6906029",
+    "order": 1,
+    "width": "6",
+    "height": "1",
+    "passthru": true,
+    "multiple": false,
+    "options": [
+      {
+        "label": "AUTO",
+        "value": "AUTO",
+        "type": "str"
+      },
+      {
+        "label": "MANUAL",
+        "value": "MANUAL",
+        "type": "str"
+      }
+    ],
+    "payload": "",
+    "topic": "mode",
+    "x": 150,
+    "y": 80,
+    "wires": [
+      [
+        "f729a10e340980e3"
+      ]
+    ]
+  },
+  {
+    "id": "b253d5672db05cda",
+    "type": "ui_switch",
+    "z": "e78548f11f9d20a6",
+    "name": "Manual LED",
+    "label": "manual led",
+    "tooltip": "Only used when mode=MANUAL",
+    "group": "addd418ef6906029",
+    "order": 2,
+    "width": "6",
+    "height": "1",
+    "passthru": true,
+    "decouple": "false",
+    "topic": "led",
+    "style": "",
+    "onvalue": "1",
+    "onvalueType": "num",
+    "offvalue": "0",
+    "offvalueType": "num",
+    "animate": true,
+    "x": 160,
+    "y": 140,
+    "wires": [
+      [
+        "f729a10e340980e3"
+      ]
+    ]
+  },
+  {
+    "id": "f729a10e340980e3",
+    "type": "function",
+    "z": "e78548f11f9d20a6",
+    "name": "Build override JSON",
+    "func": "// Combine mode + led into one override payload\\n// Store latest selections in context\\nlet mode = context.get('mode') || 'AUTO';\\nlet led = context.get('led');\\nif (msg.topic === 'mode') { mode = String(msg.payload); context.set('mode', mode); }\\nif (msg.topic === 'led') { led = Number(msg.payload); context.set('led', led); }\\nlet out = { mode };\\nif (mode === 'MANUAL') {\\n  if (led === 0 || led === 1) out.led = led;\\n}\\nmsg.payload = JSON.stringify(out);\\nreturn [msg, {payload: msg.payload}];",
+    "outputs": 2,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 430,
+    "y": 110,
+    "wires": [
+      [
+        "0a39704cb02d4d2a"
+      ],
+      [
+        "80dbe83e7aeda2d6"
+      ]
+    ]
+  },
+  {
+    "id": "0a39704cb02d4d2a",
+    "type": "mqtt out",
+    "z": "e78548f11f9d20a6",
+    "name": "Override OUT",
+    "topic": "cps/esp32/override",
+    "qos": "0",
+    "retain": "false",
+    "broker": "0019b11bea6b5837",
+    "x": 670,
+    "y": 90,
+    "wires": []
+  },
+  {
+    "id": "80dbe83e7aeda2d6",
+    "type": "ui_text",
+    "z": "e78548f11f9d20a6",
+    "group": "addd418ef6906029",
+    "order": 3,
+    "width": "12",
+    "height": "1",
+    "name": "Override preview",
+    "label": "override JSON",
+    "format": "{{msg.payload}}",
+    "layout": "row-spread",
+    "x": 680,
+    "y": 150,
+    "wires": []
+  },
+  {
+    "id": "573ced8791ff3098",
+    "type": "mqtt in",
+    "z": "e78548f11f9d20a6",
+    "name": "Actuator status IN",
+    "topic": "cps/esp32/actuator",
+    "qos": "0",
+    "datatype": "auto",
+    "broker": "0019b11bea6b5837",
+    "nl": false,
+    "rap": true,
+    "rh": 0,
+    "inputs": 0,
+    "x": 160,
+    "y": 260,
+    "wires": [
+      [
+        "296fe2e25a0ce874"
+      ]
+    ]
+  },
+  {
+    "id": "296fe2e25a0ce874",
+    "type": "json",
+    "z": "e78548f11f9d20a6",
+    "name": "JSON \u2192 object",
+    "property": "payload",
+    "action": "obj",
+    "pretty": false,
+    "x": 360,
+    "y": 260,
+    "wires": [
+      [
+        "e2492ade59eae8e9"
+      ]
+    ]
+  },
+  {
+    "id": "e2492ade59eae8e9",
+    "type": "function",
+    "z": "e78548f11f9d20a6",
+    "name": "Extract actuator fields",
+    "func": "const p = msg.payload || {};\\nreturn [\\n  {payload: p.mode ?? '-'},\\n  {payload: p.led ?? '-'},\\n  {payload: p.reason ?? '-'}\\n];",
+    "outputs": 3,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 580,
+    "y": 260,
+    "wires": [
+      [
+        "ca382d0aeb30f62c"
+      ],
+      [
+        "66082e6ddba8d0fa"
+      ],
+      [
+        "c3c120b67f0e84b6"
+      ]
+    ]
+  },
+  {
+    "id": "ca382d0aeb30f62c",
+    "type": "ui_text",
+    "z": "e78548f11f9d20a6",
+    "group": "98759d2b61c38eb9",
+    "order": 1,
+    "width": "4",
+    "height": "1",
+    "name": "Mode status",
+    "label": "mode",
+    "format": "{{msg.payload}}",
+    "layout": "row-spread",
+    "x": 820,
+    "y": 220,
+    "wires": []
+  },
+  {
+    "id": "66082e6ddba8d0fa",
+    "type": "ui_text",
+    "z": "e78548f11f9d20a6",
+    "group": "98759d2b61c38eb9",
+    "order": 2,
+    "width": "4",
+    "height": "1",
+    "name": "LED status",
+    "label": "led",
+    "format": "{{msg.payload}}",
+    "layout": "row-spread",
+    "x": 820,
+    "y": 260,
+    "wires": []
+  },
+  {
+    "id": "c3c120b67f0e84b6",
+    "type": "ui_text",
+    "z": "e78548f11f9d20a6",
+    "group": "98759d2b61c38eb9",
+    "order": 3,
+    "width": "4",
+    "height": "1",
+    "name": "Reason",
+    "label": "reason",
+    "format": "{{msg.payload}}",
+    "layout": "row-spread",
+    "x": 830,
+    "y": 300,
+    "wires": []
+  }
+]
