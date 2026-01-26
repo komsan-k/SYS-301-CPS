@@ -1,0 +1,301 @@
+[
+  {
+    "id": "a0aecda0f01afddf",
+    "type": "tab",
+    "label": "Lab 3 - Cyber (MQTT Telemetry + Commands)",
+    "disabled": false,
+    "info": "ESP32 publishes telemetry to cps/esp32/telemetry and subscribes commands on cps/esp32/cmd."
+  },
+  {
+    "id": "3af777cb07d6896e",
+    "type": "ui_tab",
+    "name": "ESP32 CPS Labs",
+    "icon": "dashboard",
+    "disabled": false,
+    "hidden": false
+  },
+  {
+    "id": "a7c8af3350c650d5",
+    "type": "ui_group",
+    "name": "Lab 3: Telemetry",
+    "tab": "3af777cb07d6896e",
+    "order": 1,
+    "disp": true,
+    "width": "12",
+    "collapse": false
+  },
+  {
+    "id": "b08f894449f3d5e1",
+    "type": "ui_group",
+    "name": "Lab 3: Commands",
+    "tab": "3af777cb07d6896e",
+    "order": 2,
+    "disp": true,
+    "width": "12",
+    "collapse": false
+  },
+  {
+    "id": "0019b11bea6b5837",
+    "type": "mqtt-broker",
+    "name": "MQTT Broker",
+    "broker": "localhost",
+    "port": "1883",
+    "tls": "",
+    "clientid": "",
+    "usetls": false,
+    "protocolVersion": "4",
+    "keepalive": "60",
+    "cleansession": true,
+    "birthTopic": "",
+    "birthQos": "0",
+    "birthPayload": "",
+    "closeTopic": "",
+    "closeQos": "0",
+    "closePayload": "",
+    "willTopic": "",
+    "willQos": "0",
+    "willPayload": "",
+    "userProps": "",
+    "sessionExpiry": ""
+  },
+  {
+    "id": "22475c2e9075dadc",
+    "type": "mqtt in",
+    "z": "a0aecda0f01afddf",
+    "name": "Telemetry IN",
+    "topic": "cps/esp32/telemetry",
+    "qos": "0",
+    "datatype": "auto",
+    "broker": "0019b11bea6b5837",
+    "nl": false,
+    "rap": true,
+    "rh": 0,
+    "inputs": 0,
+    "x": 140,
+    "y": 120,
+    "wires": [
+      [
+        "ffa5494cf395494f"
+      ]
+    ]
+  },
+  {
+    "id": "ffa5494cf395494f",
+    "type": "json",
+    "z": "a0aecda0f01afddf",
+    "name": "JSON \u2192 object",
+    "property": "payload",
+    "action": "obj",
+    "pretty": false,
+    "x": 330,
+    "y": 120,
+    "wires": [
+      [
+        "8f92b4497db0d5d8"
+      ]
+    ]
+  },
+  {
+    "id": "8f92b4497db0d5d8",
+    "type": "function",
+    "z": "a0aecda0f01afddf",
+    "name": "Format for Dashboard",
+    "func": "// expects msg.payload = {device, ts, raw, filt}\\nconst p = msg.payload || {};\\n// chart: value over time\\nmsg.chart = { payload: Number(p.filt ?? p.raw ?? 0), topic: p.device || 'esp32' };\\nmsg.rawTxt = { payload: p.raw ?? '-' };\\nmsg.filtTxt = { payload: p.filt ?? '-' };\\nreturn [msg.chart, msg.rawTxt, msg.filtTxt];",
+    "outputs": 3,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 560,
+    "y": 120,
+    "wires": [
+      [
+        "459b10e9d8984647"
+      ],
+      [
+        "090327c3b49deaba"
+      ],
+      [
+        "a70b91bb580b74cd"
+      ]
+    ]
+  },
+  {
+    "id": "459b10e9d8984647",
+    "type": "ui_chart",
+    "z": "a0aecda0f01afddf",
+    "name": "Filtered (filt) trend",
+    "group": "a7c8af3350c650d5",
+    "order": 1,
+    "width": "12",
+    "height": "5",
+    "label": "filt (or raw) vs time",
+    "chartType": "line",
+    "legend": "false",
+    "xformat": "HH:mm:ss",
+    "interpolate": "linear",
+    "nodata": "waiting...",
+    "dot": false,
+    "ymin": "",
+    "ymax": "",
+    "removeOlder": "2",
+    "removeOlderPoints": "",
+    "removeOlderUnit": "3600",
+    "cutout": 0,
+    "useOneColor": false,
+    "useUTC": false,
+    "colors": [],
+    "outputs": 1,
+    "x": 820,
+    "y": 100,
+    "wires": [
+      []
+    ]
+  },
+  {
+    "id": "090327c3b49deaba",
+    "type": "ui_text",
+    "z": "a0aecda0f01afddf",
+    "group": "a7c8af3350c650d5",
+    "order": 2,
+    "width": "6",
+    "height": "1",
+    "name": "Raw ADC",
+    "label": "raw",
+    "format": "{{msg.payload}}",
+    "layout": "row-spread",
+    "x": 820,
+    "y": 140,
+    "wires": []
+  },
+  {
+    "id": "a70b91bb580b74cd",
+    "type": "ui_text",
+    "z": "a0aecda0f01afddf",
+    "group": "a7c8af3350c650d5",
+    "order": 3,
+    "width": "6",
+    "height": "1",
+    "name": "Filtered",
+    "label": "filt",
+    "format": "{{msg.payload}}",
+    "layout": "row-spread",
+    "x": 820,
+    "y": 180,
+    "wires": []
+  },
+  {
+    "id": "9427922ae9f94ced",
+    "type": "ui_switch",
+    "z": "a0aecda0f01afddf",
+    "name": "LED ON/OFF",
+    "label": "LED",
+    "tooltip": "Send {\"led\":1} or {\"led\":0} to cps/esp32/cmd",
+    "group": "b08f894449f3d5e1",
+    "order": 1,
+    "width": "6",
+    "height": "1",
+    "passthru": true,
+    "decouple": "false",
+    "topic": "led",
+    "style": "",
+    "onvalue": "1",
+    "onvalueType": "num",
+    "onicon": "",
+    "oncolor": "",
+    "offvalue": "0",
+    "offvalueType": "num",
+    "officon": "",
+    "offcolor": "",
+    "animate": true,
+    "x": 160,
+    "y": 260,
+    "wires": [
+      [
+        "a0cc507b0b6d848a"
+      ]
+    ]
+  },
+  {
+    "id": "f75fe59840849514",
+    "type": "ui_numeric",
+    "z": "a0aecda0f01afddf",
+    "name": "Sample period (ms)",
+    "label": "sample_ms",
+    "tooltip": "Send {\"sample_ms\":N} (20..5000) to cps/esp32/cmd",
+    "group": "b08f894449f3d5e1",
+    "order": 2,
+    "width": "6",
+    "height": "1",
+    "wrap": false,
+    "passthru": true,
+    "topic": "sample_ms",
+    "format": "{{value}}",
+    "min": 20,
+    "max": 5000,
+    "step": 10,
+    "x": 170,
+    "y": 320,
+    "wires": [
+      [
+        "a0cc507b0b6d848a"
+      ]
+    ]
+  },
+  {
+    "id": "a0cc507b0b6d848a",
+    "type": "function",
+    "z": "a0aecda0f01afddf",
+    "name": "Build JSON command",
+    "func": "// msg.topic comes from widget: 'led' or 'sample_ms'\\nlet cmd = {};\\nif (msg.topic === 'led') cmd.led = Number(msg.payload);\\nif (msg.topic === 'sample_ms') cmd.sample_ms = Number(msg.payload);\\nmsg.payload = JSON.stringify(cmd);\\n// preview\\nconst preview = { payload: msg.payload };\\nreturn [msg, preview];",
+    "outputs": 2,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 420,
+    "y": 290,
+    "wires": [
+      [
+        "151ca49124ef6c88"
+      ],
+      [
+        "05d731c78e472c89"
+      ]
+    ]
+  },
+  {
+    "id": "151ca49124ef6c88",
+    "type": "mqtt out",
+    "z": "a0aecda0f01afddf",
+    "name": "CMD OUT",
+    "topic": "cps/esp32/cmd",
+    "qos": "0",
+    "retain": "false",
+    "respTopic": "",
+    "contentType": "",
+    "userProps": "",
+    "correl": "",
+    "expiry": "",
+    "broker": "0019b11bea6b5837",
+    "x": 650,
+    "y": 270,
+    "wires": []
+  },
+  {
+    "id": "05d731c78e472c89",
+    "type": "ui_text",
+    "z": "a0aecda0f01afddf",
+    "group": "b08f894449f3d5e1",
+    "order": 3,
+    "width": "12",
+    "height": "1",
+    "name": "Command preview",
+    "label": "cmd JSON",
+    "format": "{{msg.payload}}",
+    "layout": "row-spread",
+    "x": 660,
+    "y": 330,
+    "wires": []
+  }
+]

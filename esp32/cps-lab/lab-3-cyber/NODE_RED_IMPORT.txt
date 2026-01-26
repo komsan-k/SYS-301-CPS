@@ -1,0 +1,5 @@
+Node-RED Import:
+1) Menu → Import → select the provided node_red_labX_flow.json
+2) Edit the MQTT Broker node (default localhost:1883) to match your broker
+3) Ensure node-red-dashboard is installed for UI widgets
+4) Deploy
