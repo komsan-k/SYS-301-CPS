@@ -120,4 +120,3 @@ For research and publications:
 - Lab series: *Connection → Cognition CPS Pipeline*
 - Project: *ISO/IEC 30141–compliant IoT system*
 
-\
