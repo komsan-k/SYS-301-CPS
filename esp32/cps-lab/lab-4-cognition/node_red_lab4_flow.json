@@ -1,0 +1,179 @@
+[
+  {
+    "id": "0019b11bea6b5837",
+    "type": "mqtt-broker",
+    "name": "MQTT Broker",
+    "broker": "localhost",
+    "port": "1883",
+    "tls": "",
+    "clientid": "",
+    "usetls": false,
+    "protocolVersion": "4",
+    "keepalive": "60",
+    "cleansession": true,
+    "birthTopic": "",
+    "birthQos": "0",
+    "birthPayload": "",
+    "closeTopic": "",
+    "closeQos": "0",
+    "closePayload": "",
+    "willTopic": "",
+    "willQos": "0",
+    "willPayload": "",
+    "userProps": "",
+    "sessionExpiry": ""
+  },
+  {
+    "id": "3af777cb07d6896e",
+    "type": "ui_tab",
+    "name": "ESP32 CPS Labs",
+    "icon": "dashboard",
+    "disabled": false,
+    "hidden": false
+  },
+  {
+    "id": "b07e590aa3362c9b",
+    "type": "tab",
+    "label": "Lab 4 - Cognition (State Dashboard)",
+    "disabled": false,
+    "info": "ESP32 publishes cognition state to cps/esp32/state. This flow visualizes state + filt value."
+  },
+  {
+    "id": "a0fb3c6f560cf4d4",
+    "type": "ui_group",
+    "name": "Lab 4: Cognition",
+    "tab": "3af777cb07d6896e",
+    "order": 3,
+    "disp": true,
+    "width": "12",
+    "collapse": false
+  },
+  {
+    "id": "2020e137f2c8a7f0",
+    "type": "mqtt in",
+    "z": "b07e590aa3362c9b",
+    "name": "State IN",
+    "topic": "cps/esp32/state",
+    "qos": "0",
+    "datatype": "auto",
+    "broker": "0019b11bea6b5837",
+    "nl": false,
+    "rap": true,
+    "rh": 0,
+    "inputs": 0,
+    "x": 130,
+    "y": 100,
+    "wires": [
+      [
+        "2d82e1b1526f766d"
+      ]
+    ]
+  },
+  {
+    "id": "2d82e1b1526f766d",
+    "type": "json",
+    "z": "b07e590aa3362c9b",
+    "name": "JSON \u2192 object",
+    "property": "payload",
+    "action": "obj",
+    "pretty": false,
+    "x": 320,
+    "y": 100,
+    "wires": [
+      [
+        "f25c8a8e95480f87"
+      ]
+    ]
+  },
+  {
+    "id": "f25c8a8e95480f87",
+    "type": "function",
+    "z": "b07e590aa3362c9b",
+    "name": "Extract state + filt",
+    "func": "const p = msg.payload || {};\\nconst state = (p.state || 'UNKNOWN');\\nconst filt = Number(p.filt ?? p.raw ?? 0);\\nreturn [ {payload: state}, {payload: filt}, {payload: filt, topic: p.device || 'esp32'} ];",
+    "outputs": 3,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 540,
+    "y": 100,
+    "wires": [
+      [
+        "200e995a9dcc24c3"
+      ],
+      [
+        "d7aaccee4fb85efe"
+      ],
+      [
+        "fa82bdf1b08b41b5"
+      ]
+    ]
+  },
+  {
+    "id": "200e995a9dcc24c3",
+    "type": "ui_text",
+    "z": "b07e590aa3362c9b",
+    "group": "a0fb3c6f560cf4d4",
+    "order": 1,
+    "width": "6",
+    "height": "1",
+    "name": "State",
+    "label": "state",
+    "format": "{{msg.payload}}",
+    "layout": "row-spread",
+    "x": 790,
+    "y": 60,
+    "wires": []
+  },
+  {
+    "id": "d7aaccee4fb85efe",
+    "type": "ui_gauge",
+    "z": "b07e590aa3362c9b",
+    "group": "a0fb3c6f560cf4d4",
+    "order": 2,
+    "width": "6",
+    "height": "3",
+    "name": "filt gauge",
+    "label": "filt",
+    "format": "{{value}}",
+    "min": 0,
+    "max": "4095",
+    "seg1": "",
+    "seg2": "",
+    "x": 780,
+    "y": 110,
+    "wires": []
+  },
+  {
+    "id": "fa82bdf1b08b41b5",
+    "type": "ui_chart",
+    "z": "b07e590aa3362c9b",
+    "name": "filt trend",
+    "group": "a0fb3c6f560cf4d4",
+    "order": 3,
+    "width": "12",
+    "height": "4",
+    "label": "filt vs time",
+    "chartType": "line",
+    "legend": "false",
+    "xformat": "HH:mm:ss",
+    "interpolate": "linear",
+    "nodata": "waiting...",
+    "dot": false,
+    "ymin": "",
+    "ymax": "",
+    "removeOlder": "2",
+    "removeOlderUnit": "3600",
+    "cutout": 0,
+    "useOneColor": false,
+    "useUTC": false,
+    "colors": [],
+    "outputs": 1,
+    "x": 790,
+    "y": 160,
+    "wires": [
+      []
+    ]
+  }
+]
