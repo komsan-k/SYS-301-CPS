@@ -1,6 +1,6 @@
 # ESP32 System Architecture 
 
-This README provides a **deep, textbook-ready explanation of the ESP32 architecture**, suitable for courses, laboratories, and academic books in **IoT, Embedded Systems, and Cyber-Physical Systems (CPS)**.
+This section provides a **deep, textbook-ready explanation of the ESP32 architecture**, suitable for courses, laboratories, and academic books in **IoT, Embedded Systems, and Cyber-Physical Systems (CPS)**.
 
 ---
 
