@@ -19,7 +19,7 @@ A hands-on lab sequence to master **Node-RED Function nodes** and the **`msg` ob
 
 ## What you will learn
 
-By completing Labs 0–10, you will be able to:
+By completing Labs 0–12, you will be able to:
 
 - Safely read/modify `msg` (especially `msg.payload`)
 - Control flow using `return msg`, `return null`, and return arrays
