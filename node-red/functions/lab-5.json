@@ -1,0 +1,47 @@
+[
+  {
+    "id": "l5_tab",
+    "type": "tab",
+    "label": "Lab 5 - Async node.send",
+    "disabled": false,
+    "info": ""
+  },
+  {
+    "id": "l5_inject",
+    "type": "inject",
+    "z": "l5_tab",
+    "name": "Inject: async",
+    "props": [{ "p": "payload" }],
+    "payload": "wait",
+    "payloadType": "str",
+    "x": 170,
+    "y": 120,
+    "wires": [["l5_fn"]]
+  },
+  {
+    "id": "l5_fn",
+    "type": "function",
+    "z": "l5_tab",
+    "name": "Function: async send",
+    "func": "// Async example: DO NOT return msg at the end.\nvar delayMs = 800;\nsetTimeout(function () {\n  msg.payload = \"Done after \" + delayMs + \" ms\";\n  node.send(msg);\n}, delayMs);\nreturn; // important",
+    "outputs": 1,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "x": 430,
+    "y": 120,
+    "wires": [["l5_debug"]]
+  },
+  {
+    "id": "l5_debug",
+    "type": "debug",
+    "z": "l5_tab",
+    "name": "Debug: async result",
+    "active": true,
+    "complete": "true",
+    "targetType": "full",
+    "x": 680,
+    "y": 120,
+    "wires": []
+  }
+]
