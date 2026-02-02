@@ -264,6 +264,84 @@ Flow export + short demo notes.
 
 ---
 
+
+---
+
+## Lab 11 — Using external modules with `functionGlobalContext`
+
+### Goal
+Learn how to access **external Node.js modules** inside a Function node via `functionGlobalContext`.
+
+### Background
+By default, Function nodes run in a sandbox. To use external libraries (e.g., `moment`, `lodash`, custom utilities), they must be exposed in `settings.js`.
+
+### Build
+**Inject → Function → Debug**
+
+### Tasks
+1. Edit `settings.js` and add:
+   ```js
+   functionGlobalContext: {
+       moment: require("moment")
+   }
+   ```
+2. Restart Node-RED.
+3. In the Function node, use:
+   ```js
+   const moment = global.get("moment");
+   msg.payload = moment().format("YYYY-MM-DD HH:mm:ss");
+   return msg;
+   ```
+
+### Deliverable
+- Screenshot of Debug showing formatted timestamp
+- Short explanation of why `functionGlobalContext` is required
+
+### Safety note
+Explain why unrestricted `require()` is disabled by default (security and stability).
+
+---
+
+## Lab 12 — Preserving `msg.req` / `msg.res` in HTTP flows
+
+### Goal
+Understand why **preserving the original `msg` object** is critical in HTTP-based flows.
+
+### Build
+**HTTP In → Function → HTTP Response**
+
+(Optional: add Debug after Function)
+
+### Tasks
+1. Create an HTTP endpoint:
+   - Method: GET
+   - URL: `/lab12/test`
+2. In the Function node, try this (incorrect):
+   ```js
+   return { payload: "Hello HTTP" };
+   ```
+3. Observe the error or hanging request.
+4. Fix it by preserving the original message:
+   ```js
+   msg.payload = "Hello HTTP";
+   return msg;
+   ```
+
+### Deliverable
+- Explanation of what happens when `msg.req` / `msg.res` are lost
+- Screenshot of successful browser response after fixing the code
+
+### Key insight
+Some Node-RED nodes (HTTP In/Response, WebSocket, TCP) rely on **hidden message properties**. Replacing `msg` breaks the protocol chain.
+
+---
+
+## Extension ideas (optional)
+
+- Modify Lab 12 to return JSON and HTTP status codes
+- Combine Lab 11 + Lab 12 to format HTTP responses with an external library
+- Discuss best practices for secure Function node design in production flows
+
 ## References
 
 1. Node-RED User Guide — **Writing Functions** (Function node, `msg`, multiple outputs, async `node.send()`/`node.done()`, context, logging, status):  
@@ -272,10 +350,4 @@ Flow export + short demo notes.
 2. Node-RED Documentation — User Guide (general guides and concepts):  
    https://nodered.org/docs/user-guide/
 
----
-
-## License / reuse (optional)
-
-Feel free to reuse this lab outline in courses and workshops.  
-If you publish adaptations, please include a link back to the Node-RED documentation above.
 
