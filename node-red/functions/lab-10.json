@@ -1,0 +1,118 @@
+[
+  {
+    "id": "l10_tab",
+    "type": "tab",
+    "label": "Lab 10 - Status + Router",
+    "disabled": false,
+    "info": ""
+  },
+  {
+    "id": "l10_inject_low",
+    "type": "inject",
+    "z": "l10_tab",
+    "name": "Inject: 10 (LOW)",
+    "props": [{ "p": "payload" }],
+    "payload": 10,
+    "payloadType": "num",
+    "x": 170,
+    "y": 80,
+    "wires": [["l10_fn"]]
+  },
+  {
+    "id": "l10_inject_mid",
+    "type": "inject",
+    "z": "l10_tab",
+    "name": "Inject: 50 (MID)",
+    "props": [{ "p": "payload" }],
+    "payload": 50,
+    "payloadType": "num",
+    "x": 170,
+    "y": 120,
+    "wires": [["l10_fn"]]
+  },
+  {
+    "id": "l10_inject_high",
+    "type": "inject",
+    "z": "l10_tab",
+    "name": "Inject: 90 (HIGH)",
+    "props": [{ "p": "payload" }],
+    "payload": 90,
+    "payloadType": "num",
+    "x": 180,
+    "y": 160,
+    "wires": [["l10_fn"]]
+  },
+  {
+    "id": "l10_fn",
+    "type": "function",
+    "z": "l10_tab",
+    "name": "Function: threshold router + status",
+    "func": "// Configure thresholds\nvar low = 30;\nvar high = 80;\n\nvar x = Number(msg.payload);\nif (!isFinite(x)) {\n  node.status({ fill: \"red\", shape: \"ring\", text: \"NOT NUM\" });\n  node.error(\"Payload is not a number\", msg);\n  return null;\n}\n\nmsg.value = x;\n\nif (x < low) {\n  node.status({ fill: \"blue\", shape: \"dot\", text: \"LOW\" });\n  return [msg, null, null];\n}\nif (x < high) {\n  node.status({ fill: \"yellow\", shape: \"dot\", text: \"MID\" });\n  return [null, msg, null];\n}\nnode.status({ fill: \"red\", shape: \"dot\", text: \"HIGH\" });\nreturn [null, null, msg];",
+    "outputs": 3,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "x": 520,
+    "y": 120,
+    "wires": [["l10_dbg_low"], ["l10_dbg_mid"], ["l10_dbg_high"]]
+  },
+  {
+    "id": "l10_dbg_low",
+    "type": "debug",
+    "z": "l10_tab",
+    "name": "OUT1 LOW",
+    "active": true,
+    "complete": "true",
+    "targetType": "full",
+    "x": 730,
+    "y": 80,
+    "wires": []
+  },
+  {
+    "id": "l10_dbg_mid",
+    "type": "debug",
+    "z": "l10_tab",
+    "name": "OUT2 MID",
+    "active": true,
+    "complete": "true",
+    "targetType": "full",
+    "x": 730,
+    "y": 120,
+    "wires": []
+  },
+  {
+    "id": "l10_dbg_high",
+    "type": "debug",
+    "z": "l10_tab",
+    "name": "OUT3 HIGH",
+    "active": true,
+    "complete": "true",
+    "targetType": "full",
+    "x": 740,
+    "y": 160,
+    "wires": []
+  },
+  {
+    "id": "l10_catch",
+    "type": "catch",
+    "z": "l10_tab",
+    "name": "Catch errors",
+    "scope": ["l10_fn"],
+    "uncaught": false,
+    "x": 210,
+    "y": 220,
+    "wires": [["l10_dbg_err"]]
+  },
+  {
+    "id": "l10_dbg_err",
+    "type": "debug",
+    "z": "l10_tab",
+    "name": "Debug: caught error",
+    "active": true,
+    "complete": "true",
+    "targetType": "full",
+    "x": 510,
+    "y": 220,
+    "wires": []
+  }
+]
