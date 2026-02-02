@@ -1,0 +1,54 @@
+[
+  {
+    "id": "l11_tab",
+    "type": "tab",
+    "label": "Lab 11 - functionGlobalContext",
+    "disabled": false,
+    "info": ""
+  },
+  {
+    "id": "l11_inject",
+    "type": "inject",
+    "z": "l11_tab",
+    "name": "Inject: timestamp",
+    "props": [{ "p": "payload" }],
+    "payload": "",
+    "payloadType": "date",
+    "repeat": "",
+    "crontab": "",
+    "once": false,
+    "onceDelay": 0.1,
+    "x": 180,
+    "y": 120,
+    "wires": [["l11_fn"]]
+  },
+  {
+    "id": "l11_fn",
+    "type": "function",
+    "z": "l11_tab",
+    "name": "Function: use moment from global",
+    "func": "// Prereq in settings.js:\n// functionGlobalContext: { moment: require(\"moment\") }\n\nconst moment = global.get(\"moment\");\n\nif (!moment) {\n  node.status({ fill: \"red\", shape: \"ring\", text: \"moment not found\" });\n  msg.payload = {\n    ok: false,\n    error: \"moment not available in functionGlobalContext\",\n    hint: \"Edit settings.js: functionGlobalContext: { moment: require('moment') } and restart Node-RED\"\n  };\n  return msg;\n}\n\nnode.status({ fill: \"green\", shape: \"dot\", text: \"moment ok\" });\nmsg.payload = {\n  ok: true,\n  iso: moment().toISOString(),\n  local: moment().format(\"YYYY-MM-DD HH:mm:ss\"),\n  note: \"This is provided by functionGlobalContext\"\n};\nreturn msg;",
+    "outputs": 1,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "x": 470,
+    "y": 120,
+    "wires": [["l11_debug"]]
+  },
+  {
+    "id": "l11_debug",
+    "type": "debug",
+    "z": "l11_tab",
+    "name": "Debug: payload",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": false,
+    "complete": "payload",
+    "targetType": "msg",
+    "x": 700,
+    "y": 120,
+    "wires": []
+  }
+]
