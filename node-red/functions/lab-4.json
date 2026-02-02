@@ -1,0 +1,47 @@
+[
+  {
+    "id": "l4_tab",
+    "type": "tab",
+    "label": "Lab 4 - Multiple messages",
+    "disabled": false,
+    "info": ""
+  },
+  {
+    "id": "l4_inject",
+    "type": "inject",
+    "z": "l4_tab",
+    "name": "Inject: sentence",
+    "props": [{ "p": "payload" }],
+    "payload": "node red function labs are fun",
+    "payloadType": "str",
+    "x": 180,
+    "y": 120,
+    "wires": [["l4_fn"]]
+  },
+  {
+    "id": "l4_fn",
+    "type": "function",
+    "z": "l4_tab",
+    "name": "Function: emit one msg per word",
+    "func": "var words = (\"\" + msg.payload).trim().split(/\\s+/);\nvar out = [];\nfor (var i = 0; i < words.length; i++) {\n  out.push({ payload: words[i], index: i });\n}\nreturn [out];",
+    "outputs": 1,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "x": 490,
+    "y": 120,
+    "wires": [["l4_debug"]]
+  },
+  {
+    "id": "l4_debug",
+    "type": "debug",
+    "z": "l4_tab",
+    "name": "Debug: each word msg",
+    "active": true,
+    "complete": "true",
+    "targetType": "full",
+    "x": 730,
+    "y": 120,
+    "wires": []
+  }
+]
