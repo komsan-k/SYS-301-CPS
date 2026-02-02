@@ -1,0 +1,47 @@
+[
+  {
+    "id": "l9_tab",
+    "type": "tab",
+    "label": "Lab 9 - Context storage",
+    "disabled": false,
+    "info": ""
+  },
+  {
+    "id": "l9_inject",
+    "type": "inject",
+    "z": "l9_tab",
+    "name": "Inject: count",
+    "props": [{ "p": "payload" }],
+    "payload": 1,
+    "payloadType": "num",
+    "x": 170,
+    "y": 120,
+    "wires": [["l9_fn"]]
+  },
+  {
+    "id": "l9_fn",
+    "type": "function",
+    "z": "l9_tab",
+    "name": "Function: node/flow/global counters",
+    "func": "// Node context\nvar n = context.get(\"n\") || 0;\n\n// Flow context\nvar f = flow.get(\"f\") || 0;\n\n// Global context\nvar g = global.get(\"g\") || 0;\n\nn += 1; f += 1; g += 1;\ncontext.set(\"n\", n);\nflow.set(\"f\", f);\nglobal.set(\"g\", g);\n\nmsg.payload = {\n  nodeCount: n,\n  flowCount: f,\n  globalCount: g\n};\nreturn msg;",
+    "outputs": 1,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "x": 500,
+    "y": 120,
+    "wires": [["l9_debug"]]
+  },
+  {
+    "id": "l9_debug",
+    "type": "debug",
+    "z": "l9_tab",
+    "name": "Debug: counters",
+    "active": true,
+    "complete": "payload",
+    "targetType": "msg",
+    "x": 710,
+    "y": 120,
+    "wires": []
+  }
+]
