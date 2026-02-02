@@ -1,0 +1,59 @@
+[
+  {
+    "id": "l1_tab",
+    "type": "tab",
+    "label": "Lab 1 - Preserve msg",
+    "disabled": false,
+    "info": ""
+  },
+  {
+    "id": "l1_inject",
+    "type": "inject",
+    "z": "l1_tab",
+    "name": "Inject: sample text",
+    "props": [{ "p": "payload" }],
+    "payload": "node red",
+    "payloadType": "str",
+    "x": 180,
+    "y": 120,
+    "wires": [["l1_fn"]]
+  },
+  {
+    "id": "l1_fn",
+    "type": "function",
+    "z": "l1_tab",
+    "name": "Function: safe edit",
+    "func": "// Option 1 (unsafe for some flows): create a new msg\n// var newMsg = { payload: msg.payload.length };\n// return newMsg;\n\n// Option 2 (recommended): preserve msg\nmsg.len = (\"\" + msg.payload).length;\nreturn msg;",
+    "outputs": 1,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "x": 440,
+    "y": 120,
+    "wires": [["l1_debug_all", "l1_debug_payload"]]
+  },
+  {
+    "id": "l1_debug_payload",
+    "type": "debug",
+    "z": "l1_tab",
+    "name": "Debug: payload",
+    "active": true,
+    "complete": "payload",
+    "targetType": "msg",
+    "x": 700,
+    "y": 100,
+    "wires": []
+  },
+  {
+    "id": "l1_debug_all",
+    "type": "debug",
+    "z": "l1_tab",
+    "name": "Debug: full msg",
+    "active": true,
+    "complete": "true",
+    "targetType": "full",
+    "x": 700,
+    "y": 140,
+    "wires": []
+  }
+]
