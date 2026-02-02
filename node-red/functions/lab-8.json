@@ -1,0 +1,82 @@
+[
+  {
+    "id": "l8_tab",
+    "type": "tab",
+    "label": "Lab 8 - Logging + Catch",
+    "disabled": false,
+    "info": ""
+  },
+  {
+    "id": "l8_inject_ok",
+    "type": "inject",
+    "z": "l8_tab",
+    "name": "Inject: OK",
+    "props": [{ "p": "payload" }],
+    "payload": "ok",
+    "payloadType": "str",
+    "x": 150,
+    "y": 100,
+    "wires": [["l8_fn"]]
+  },
+  {
+    "id": "l8_inject_err",
+    "type": "inject",
+    "z": "l8_tab",
+    "name": "Inject: ERROR",
+    "props": [{ "p": "payload" }],
+    "payload": "error",
+    "payloadType": "str",
+    "x": 160,
+    "y": 140,
+    "wires": [["l8_fn"]]
+  },
+  {
+    "id": "l8_fn",
+    "type": "function",
+    "z": "l8_tab",
+    "name": "Function: warn/log/error",
+    "func": "node.log(\"Log: received payload=\" + msg.payload);\nnode.warn(\"Warn: check payload=\" + msg.payload);\n\nif (msg.payload === \"error\") {\n  node.error(\"Triggered error on purpose\", msg);\n  return null;\n}\n\nmsg.payload = \"All good\";\nreturn msg;",
+    "outputs": 1,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "x": 450,
+    "y": 120,
+    "wires": [["l8_debug_ok"]]
+  },
+  {
+    "id": "l8_debug_ok",
+    "type": "debug",
+    "z": "l8_tab",
+    "name": "Debug: normal output",
+    "active": true,
+    "complete": "true",
+    "targetType": "full",
+    "x": 720,
+    "y": 100,
+    "wires": []
+  },
+  {
+    "id": "l8_catch",
+    "type": "catch",
+    "z": "l8_tab",
+    "name": "Catch errors",
+    "scope": ["l8_fn"],
+    "uncaught": false,
+    "x": 180,
+    "y": 220,
+    "wires": [["l8_debug_catch"]]
+  },
+  {
+    "id": "l8_debug_catch",
+    "type": "debug",
+    "z": "l8_tab",
+    "name": "Debug: caught error",
+    "active": true,
+    "complete": "true",
+    "targetType": "full",
+    "x": 470,
+    "y": 220,
+    "wires": []
+  }
+]
