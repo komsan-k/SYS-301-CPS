@@ -1,0 +1,58 @@
+[
+  {
+    "id": "l0_tab",
+    "type": "tab",
+    "label": "Lab 0 - Hello msg",
+    "disabled": false,
+    "info": ""
+  },
+  {
+    "id": "l0_inject",
+    "type": "inject",
+    "z": "l0_tab",
+    "name": "Inject: Hello",
+    "props": [
+      { "p": "payload" },
+      { "p": "topic", "vt": "str" }
+    ],
+    "payload": "Hello Node-RED",
+    "payloadType": "str",
+    "topic": "lab0",
+    "repeat": "",
+    "crontab": "",
+    "once": false,
+    "onceDelay": 0.1,
+    "x": 170,
+    "y": 120,
+    "wires": [["l0_fn"]]
+  },
+  {
+    "id": "l0_fn",
+    "type": "function",
+    "z": "l0_tab",
+    "name": "Function: pass-through",
+    "func": "// Task A: pass-through\n// return msg;\n\n// Task B: stop message\n// return null;\n\n// Task C: modify payload\nmsg.payload = \"Hi! \" + msg.payload;\nreturn msg;",
+    "outputs": 1,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "x": 420,
+    "y": 120,
+    "wires": [["l0_debug"]]
+  },
+  {
+    "id": "l0_debug",
+    "type": "debug",
+    "z": "l0_tab",
+    "name": "Debug: msg.payload",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": false,
+    "complete": "payload",
+    "targetType": "msg",
+    "x": 680,
+    "y": 120,
+    "wires": []
+  }
+]
