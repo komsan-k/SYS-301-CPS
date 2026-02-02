@@ -1,0 +1,47 @@
+[
+  {
+    "id": "l6_tab",
+    "type": "tab",
+    "label": "Lab 6 - Async node.done",
+    "disabled": false,
+    "info": ""
+  },
+  {
+    "id": "l6_inject",
+    "type": "inject",
+    "z": "l6_tab",
+    "name": "Inject: async + done",
+    "props": [{ "p": "payload" }],
+    "payload": "track",
+    "payloadType": "str",
+    "x": 200,
+    "y": 120,
+    "wires": [["l6_fn"]]
+  },
+  {
+    "id": "l6_fn",
+    "type": "function",
+    "z": "l6_tab",
+    "name": "Function: node.send + node.done",
+    "func": "var delayMs = 500;\nsetTimeout(function () {\n  msg.payload = \"Completed with node.done()\";\n  node.send(msg);\n  node.done();\n}, delayMs);\nreturn;",
+    "outputs": 1,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "x": 480,
+    "y": 120,
+    "wires": [["l6_debug"]]
+  },
+  {
+    "id": "l6_debug",
+    "type": "debug",
+    "z": "l6_tab",
+    "name": "Debug: async done",
+    "active": true,
+    "complete": "true",
+    "targetType": "full",
+    "x": 700,
+    "y": 120,
+    "wires": []
+  }
+]
