@@ -1,0 +1,71 @@
+[
+  {
+    "id": "l3_tab",
+    "type": "tab",
+    "label": "Lab 3 - node.outputCount",
+    "disabled": false,
+    "info": ""
+  },
+  {
+    "id": "l3_inject",
+    "type": "inject",
+    "z": "l3_tab",
+    "name": "Inject: random route",
+    "props": [{ "p": "payload" }],
+    "payload": "ping",
+    "payloadType": "str",
+    "x": 190,
+    "y": 120,
+    "wires": [["l3_fn"]]
+  },
+  {
+    "id": "l3_fn",
+    "type": "function",
+    "z": "l3_tab",
+    "name": "Function: route to random output",
+    "func": "// Change this Function node's output count and code still works.\nvar outputs = new Array(node.outputCount);\nvar i = Math.floor(Math.random() * node.outputCount);\nmsg.which = i;\noutputs[i] = msg;\nreturn outputs;",
+    "outputs": 3,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "x": 470,
+    "y": 120,
+    "wires": [["l3_dbg1"], ["l3_dbg2"], ["l3_dbg3"]]
+  },
+  {
+    "id": "l3_dbg1",
+    "type": "debug",
+    "z": "l3_tab",
+    "name": "OUT1",
+    "active": true,
+    "complete": "true",
+    "targetType": "full",
+    "x": 670,
+    "y": 80,
+    "wires": []
+  },
+  {
+    "id": "l3_dbg2",
+    "type": "debug",
+    "z": "l3_tab",
+    "name": "OUT2",
+    "active": true,
+    "complete": "true",
+    "targetType": "full",
+    "x": 670,
+    "y": 120,
+    "wires": []
+  },
+  {
+    "id": "l3_dbg3",
+    "type": "debug",
+    "z": "l3_tab",
+    "name": "OUT3",
+    "active": true,
+    "complete": "true",
+    "targetType": "full",
+    "x": 670,
+    "y": 160,
+    "wires": []
+  }
+]
