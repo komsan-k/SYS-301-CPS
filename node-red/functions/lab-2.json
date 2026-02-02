@@ -1,0 +1,79 @@
+[
+  {
+    "id": "l2_tab",
+    "type": "tab",
+    "label": "Lab 2 - Multiple outputs",
+    "disabled": false,
+    "info": ""
+  },
+  {
+    "id": "l2_inject_apple",
+    "type": "inject",
+    "z": "l2_tab",
+    "name": "Inject: apple",
+    "props": [
+      { "p": "payload" },
+      { "p": "topic", "vt": "str" }
+    ],
+    "payload": "fruit",
+    "payloadType": "str",
+    "topic": "apple",
+    "x": 160,
+    "y": 100,
+    "wires": [["l2_fn"]]
+  },
+  {
+    "id": "l2_inject_banana",
+    "type": "inject",
+    "z": "l2_tab",
+    "name": "Inject: banana",
+    "props": [
+      { "p": "payload" },
+      { "p": "topic", "vt": "str" }
+    ],
+    "payload": "fruit",
+    "payloadType": "str",
+    "topic": "banana",
+    "x": 170,
+    "y": 140,
+    "wires": [["l2_fn"]]
+  },
+  {
+    "id": "l2_fn",
+    "type": "function",
+    "z": "l2_tab",
+    "name": "Function: route by topic",
+    "func": "// Output 1: not banana\n// Output 2: banana\nif (msg.topic === \"banana\") {\n  return [null, msg];\n}\nreturn [msg, null];",
+    "outputs": 2,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "x": 440,
+    "y": 120,
+    "wires": [["l2_debug_out1"], ["l2_debug_out2"]]
+  },
+  {
+    "id": "l2_debug_out1",
+    "type": "debug",
+    "z": "l2_tab",
+    "name": "Debug OUT1",
+    "active": true,
+    "complete": "true",
+    "targetType": "full",
+    "x": 680,
+    "y": 100,
+    "wires": []
+  },
+  {
+    "id": "l2_debug_out2",
+    "type": "debug",
+    "z": "l2_tab",
+    "name": "Debug OUT2 (banana)",
+    "active": true,
+    "complete": "true",
+    "targetType": "full",
+    "x": 710,
+    "y": 140,
+    "wires": []
+  }
+]
