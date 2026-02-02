@@ -1,0 +1,47 @@
+[
+  {
+    "id": "l7_tab",
+    "type": "tab",
+    "label": "Lab 7 - On Start/Stop + context",
+    "disabled": false,
+    "info": ""
+  },
+  {
+    "id": "l7_inject",
+    "type": "inject",
+    "z": "l7_tab",
+    "name": "Inject: tick",
+    "props": [{ "p": "payload" }],
+    "payload": "tick",
+    "payloadType": "str",
+    "x": 160,
+    "y": 120,
+    "wires": [["l7_fn"]]
+  },
+  {
+    "id": "l7_fn",
+    "type": "function",
+    "z": "l7_tab",
+    "name": "Function: counter w/ lifecycle",
+    "func": "// In On Start, we initialize counter.\n// Each click increments counter.\nvar c = context.get(\"count\") || 0;\nc += 1;\ncontext.set(\"count\", c);\nmsg.count = c;\nmsg.payload = \"count=\" + c;\nreturn msg;",
+    "outputs": 1,
+    "noerr": 0,
+    "initialize": "// On Start\nif (context.get(\"count\") === undefined) {\n  context.set(\"count\", 0);\n}\nnode.log(\"Lab7 started\");",
+    "finalize": "// On Stop\nnode.log(\"Lab7 stopping\");",
+    "x": 450,
+    "y": 120,
+    "wires": [["l7_debug"]]
+  },
+  {
+    "id": "l7_debug",
+    "type": "debug",
+    "z": "l7_tab",
+    "name": "Debug: counter",
+    "active": true,
+    "complete": "true",
+    "targetType": "full",
+    "x": 670,
+    "y": 120,
+    "wires": []
+  }
+]
