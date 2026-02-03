@@ -32,7 +32,7 @@ By completing Labs 0–12, you will be able to:
 - Provide runtime feedback using `node.status()`
 
 ---
-
+<!--
 ## Grading / deliverables (recommended)
 
 For each lab, submit:
@@ -44,7 +44,7 @@ For each lab, submit:
 > Tip: Put reflections in a single file (e.g., `reflection.md`) with one section per lab.
 
 ---
-
+--->
 ## How to run the labs
 
 1. Create a new flow tab per lab (recommended), or keep them all in one workspace.
