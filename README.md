@@ -17,11 +17,11 @@ A **Cyber-Physical System (CPS)** is an intelligent system in which physical pro
 
 ---
 
-### 🚀 CPS Project — **14%**
-- Project#1: **3%**
-- Project#2: **3%**
-- Project#3: **4%**
-- Project#4: **4%**
+### 🚀 CPS Practicals — **14%**
+- Practical#1: **3%**
+- Practical#2: **3%**
+- Practical#3: **4%**
+- Practical#4: **4%**
 ---
 
 ### 🎓 Coursera Certificate — **20%**
