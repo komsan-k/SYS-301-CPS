@@ -1,0 +1,393 @@
+[
+  {
+    "id": "tab_motion_lab",
+    "type": "tab",
+    "label": "Smartphone Motion Lab",
+    "disabled": false,
+    "info": "Poll smartphone motion data and visualize on dashboard"
+  },
+  {
+    "id": "ui_tab_motion",
+    "type": "ui_tab",
+    "name": "Motion Lab",
+    "icon": "dashboard",
+    "disabled": false,
+    "hidden": false
+  },
+  {
+    "id": "ui_group_motion",
+    "type": "ui_group",
+    "name": "Smartphone Orientation",
+    "tab": "ui_tab_motion",
+    "order": 1,
+    "disp": true,
+    "width": "12",
+    "collapse": false
+  },
+  {
+    "id": "inject_poll",
+    "type": "inject",
+    "z": "tab_motion_lab",
+    "name": "Poll every 0.2 s",
+    "props": [
+      {
+        "p": "payload"
+      }
+    ],
+    "repeat": "0.2",
+    "crontab": "",
+    "once": true,
+    "onceDelay": "1",
+    "topic": "",
+    "payload": "",
+    "payloadType": "date",
+    "x": 150,
+    "y": 100,
+    "wires": [
+      [
+        "http_request_motion"
+      ]
+    ]
+  },
+  {
+    "id": "http_request_motion",
+    "type": "http request",
+    "z": "tab_motion_lab",
+    "name": "GET phone motion",
+    "method": "GET",
+    "ret": "obj",
+    "paytoqs": "ignore",
+    "url": "http://192.168.1.8:8080/get?pitch&roll&yaw",
+    "tls": "",
+    "persist": false,
+    "proxy": "",
+    "insecureHTTPParser": false,
+    "authType": "",
+    "senderr": false,
+    "headers": [],
+    "x": 390,
+    "y": 100,
+    "wires": [
+      [
+        "fn_extract_motion"
+      ]
+    ]
+  },
+  {
+    "id": "fn_extract_motion",
+    "type": "function",
+    "z": "tab_motion_lab",
+    "name": "Extract + convert",
+    "func": "try {\n    let pitchDeg = msg.payload.buffer.pitch.buffer[0];\n    let rollDeg  = msg.payload.buffer.roll.buffer[0];\n    let yawDeg   = msg.payload.buffer.yaw.buffer[0];\n\n    let pitchRad = pitchDeg * Math.PI / 180;\n    let rollRad  = rollDeg  * Math.PI / 180;\n    let yawRad   = yawDeg   * Math.PI / 180;\n\n    let axis_x = Math.cos(yawRad) * Math.cos(pitchRad);\n    let axis_y = Math.sin(pitchRad);\n    let axis_z = Math.sin(yawRad) * Math.cos(pitchRad);\n\n    let up_x = -Math.sin(rollRad);\n    let up_y =  Math.cos(rollRad);\n    let up_z = 0;\n\n    msg.pitchDeg = pitchDeg;\n    msg.rollDeg = rollDeg;\n    msg.yawDeg = yawDeg;\n\n    msg.pitchRad = pitchRad;\n    msg.rollRad = rollRad;\n    msg.yawRad = yawRad;\n\n    msg.axis = {\n        x: axis_x,\n        y: axis_y,\n        z: axis_z\n    };\n\n    msg.up = {\n        x: up_x,\n        y: up_y,\n        z: up_z\n    };\n\n    msg.payload = {\n        pitchDeg,\n        rollDeg,\n        yawDeg,\n        pitchRad,\n        rollRad,\n        yawRad,\n        axis: msg.axis,\n        up: msg.up\n    };\n\n    return msg;\n} catch (e) {\n    return null;\n}",
+    "outputs": 1,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 630,
+    "y": 100,
+    "wires": [
+      [
+        "chg_pitch",
+        "chg_roll",
+        "chg_yaw",
+        "chg_info",
+        "ui_template_phone",
+        "chg_pitch_rad",
+        "chg_roll_rad",
+        "chg_yaw_rad"
+      ]
+    ]
+  },
+  {
+    "id": "chg_pitch",
+    "type": "change",
+    "z": "tab_motion_lab",
+    "name": "Pitch deg",
+    "rules": [
+      {
+        "t": "set",
+        "p": "payload",
+        "pt": "msg",
+        "to": "pitchDeg",
+        "tot": "msg"
+      }
+    ],
+    "x": 860,
+    "y": 40,
+    "wires": [
+      [
+        "ui_pitch"
+      ]
+    ]
+  },
+  {
+    "id": "chg_roll",
+    "type": "change",
+    "z": "tab_motion_lab",
+    "name": "Roll deg",
+    "rules": [
+      {
+        "t": "set",
+        "p": "payload",
+        "pt": "msg",
+        "to": "rollDeg",
+        "tot": "msg"
+      }
+    ],
+    "x": 860,
+    "y": 80,
+    "wires": [
+      [
+        "ui_roll"
+      ]
+    ]
+  },
+  {
+    "id": "chg_yaw",
+    "type": "change",
+    "z": "tab_motion_lab",
+    "name": "Yaw deg",
+    "rules": [
+      {
+        "t": "set",
+        "p": "payload",
+        "pt": "msg",
+        "to": "yawDeg",
+        "tot": "msg"
+      }
+    ],
+    "x": 860,
+    "y": 120,
+    "wires": [
+      [
+        "ui_yaw"
+      ]
+    ]
+  },
+  {
+    "id": "chg_pitch_rad",
+    "type": "change",
+    "z": "tab_motion_lab",
+    "name": "Pitch rad",
+    "rules": [
+      {
+        "t": "set",
+        "p": "payload",
+        "pt": "msg",
+        "to": "pitchRad",
+        "tot": "msg"
+      }
+    ],
+    "x": 860,
+    "y": 160,
+    "wires": [
+      [
+        "ui_pitch_rad"
+      ]
+    ]
+  },
+  {
+    "id": "chg_roll_rad",
+    "type": "change",
+    "z": "tab_motion_lab",
+    "name": "Roll rad",
+    "rules": [
+      {
+        "t": "set",
+        "p": "payload",
+        "pt": "msg",
+        "to": "rollRad",
+        "tot": "msg"
+      }
+    ],
+    "x": 860,
+    "y": 200,
+    "wires": [
+      [
+        "ui_roll_rad"
+      ]
+    ]
+  },
+  {
+    "id": "chg_yaw_rad",
+    "type": "change",
+    "z": "tab_motion_lab",
+    "name": "Yaw rad",
+    "rules": [
+      {
+        "t": "set",
+        "p": "payload",
+        "pt": "msg",
+        "to": "yawRad",
+        "tot": "msg"
+      }
+    ],
+    "x": 860,
+    "y": 240,
+    "wires": [
+      [
+        "ui_yaw_rad"
+      ]
+    ]
+  },
+  {
+    "id": "ui_pitch",
+    "type": "ui_text",
+    "z": "tab_motion_lab",
+    "group": "ui_group_motion",
+    "order": 1,
+    "width": "4",
+    "height": "1",
+    "name": "Pitch",
+    "label": "Pitch (deg)",
+    "format": "{{msg.payload.toFixed(2)}}",
+    "layout": "row-spread",
+    "className": "",
+    "x": 1060,
+    "y": 40,
+    "wires": []
+  },
+  {
+    "id": "ui_roll",
+    "type": "ui_text",
+    "z": "tab_motion_lab",
+    "group": "ui_group_motion",
+    "order": 2,
+    "width": "4",
+    "height": "1",
+    "name": "Roll",
+    "label": "Roll (deg)",
+    "format": "{{msg.payload.toFixed(2)}}",
+    "layout": "row-spread",
+    "className": "",
+    "x": 1060,
+    "y": 80,
+    "wires": []
+  },
+  {
+    "id": "ui_yaw",
+    "type": "ui_text",
+    "z": "tab_motion_lab",
+    "group": "ui_group_motion",
+    "order": 3,
+    "width": "4",
+    "height": "1",
+    "name": "Yaw",
+    "label": "Yaw (deg)",
+    "format": "{{msg.payload.toFixed(2)}}",
+    "layout": "row-spread",
+    "className": "",
+    "x": 1060,
+    "y": 120,
+    "wires": []
+  },
+  {
+    "id": "ui_pitch_rad",
+    "type": "ui_text",
+    "z": "tab_motion_lab",
+    "group": "ui_group_motion",
+    "order": 4,
+    "width": "4",
+    "height": "1",
+    "name": "Pitch rad",
+    "label": "Pitch (rad)",
+    "format": "{{msg.payload.toFixed(3)}}",
+    "layout": "row-spread",
+    "className": "",
+    "x": 1070,
+    "y": 160,
+    "wires": []
+  },
+  {
+    "id": "ui_roll_rad",
+    "type": "ui_text",
+    "z": "tab_motion_lab",
+    "group": "ui_group_motion",
+    "order": 5,
+    "width": "4",
+    "height": "1",
+    "name": "Roll rad",
+    "label": "Roll (rad)",
+    "format": "{{msg.payload.toFixed(3)}}",
+    "layout": "row-spread",
+    "className": "",
+    "x": 1070,
+    "y": 200,
+    "wires": []
+  },
+  {
+    "id": "ui_yaw_rad",
+    "type": "ui_text",
+    "z": "tab_motion_lab",
+    "group": "ui_group_motion",
+    "order": 6,
+    "width": "4",
+    "height": "1",
+    "name": "Yaw rad",
+    "label": "Yaw (rad)",
+    "format": "{{msg.payload.toFixed(3)}}",
+    "layout": "row-spread",
+    "className": "",
+    "x": 1070,
+    "y": 240,
+    "wires": []
+  },
+  {
+    "id": "chg_info",
+    "type": "function",
+    "z": "tab_motion_lab",
+    "name": "Info text",
+    "func": "msg.payload = `Pitch: ${msg.pitchRad.toFixed(2)}  Roll: ${msg.rollRad.toFixed(2)}  Yaw: ${msg.yawRad.toFixed(2)}`;\nreturn msg;",
+    "outputs": 1,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 850,
+    "y": 300,
+    "wires": [
+      [
+        "ui_info"
+      ]
+    ]
+  },
+  {
+    "id": "ui_info",
+    "type": "ui_text",
+    "z": "tab_motion_lab",
+    "group": "ui_group_motion",
+    "order": 7,
+    "width": "12",
+    "height": "1",
+    "name": "Info line",
+    "label": "Status",
+    "format": "{{msg.payload}}",
+    "layout": "col-center",
+    "className": "",
+    "x": 1060,
+    "y": 300,
+    "wires": []
+  },
+  {
+    "id": "ui_template_phone",
+    "type": "ui_template",
+    "z": "tab_motion_lab",
+    "group": "ui_group_motion",
+    "name": "Phone visualization",
+    "order": 8,
+    "width": "12",
+    "height": "8",
+    "format": "<div style=\"width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#ffffff;\">\n  <div style=\"margin-bottom:12px;font-weight:bold;font-size:18px;color:#333;\">Smartphone Motion Visualization</div>\n  <div style=\"perspective:900px; width:260px; height:420px; display:flex; align-items:center; justify-content:center;\">\n    <div id=\"phoneCard\" style=\"width:140px;height:260px;border-radius:22px;background:linear-gradient(180deg,#4a90e2,#245ec7);border:6px solid #0d2b6b;box-shadow:0 18px 35px rgba(0,0,0,0.25);position:relative;transform-style:preserve-3d;transition:transform 0.12s linear;\">\n      <div style=\"position:absolute;top:10px;left:50%;transform:translateX(-50%);width:50px;height:6px;background:#0d2b6b;border-radius:6px;\"></div>\n      <div style=\"position:absolute;top:28px;left:50%;transform:translateX(-50%);width:16px;height:16px;border-radius:50%;background:#0d2b6b;\"></div>\n      <div style=\"position:absolute;bottom:14px;left:50%;transform:translateX(-50%);width:38px;height:38px;border-radius:50%;border:3px solid rgba(255,255,255,0.8);\"></div>\n    </div>\n  </div>\n  <div style=\"margin-top:16px;font-size:14px;color:#444;text-align:center;line-height:1.5;\">\n    <div><b>Pitch:</b> {{msg.payload.pitchDeg.toFixed(2)}}°</div>\n    <div><b>Roll:</b> {{msg.payload.rollDeg.toFixed(2)}}°</div>\n    <div><b>Yaw:</b> {{msg.payload.yawDeg.toFixed(2)}}°</div>\n  </div>\n</div>\n\n<script>\n(function(scope) {\n    scope.$watch('msg', function(msg) {\n        if (!msg || !msg.payload) return;\n        var p = msg.payload.pitchDeg || 0;\n        var r = msg.payload.rollDeg || 0;\n        var y = msg.payload.yawDeg || 0;\n        var el = document.getElementById('phoneCard');\n        if (el) {\n            el.style.transform = 'rotateX(' + (-p) + 'deg) rotateY(' + y + 'deg) rotateZ(' + r + 'deg)';\n        }\n    });\n})(scope);\n</script>",
+    "storeOutMessages": true,
+    "fwdInMessages": true,
+    "resendOnRefresh": true,
+    "templateScope": "local",
+    "className": "",
+    "x": 870,
+    "y": 380,
+    "wires": [
+      []
+    ]
+  }
+]
