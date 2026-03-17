@@ -1,0 +1,289 @@
+[
+    {
+        "id": "29cb921ebfb6f830",
+        "type": "tab",
+        "label": "Phyphox Gyroscope Simple",
+        "disabled": false,
+        "info": ""
+    },
+    {
+        "id": "be4d7bafe5e6638e",
+        "type": "inject",
+        "z": "29cb921ebfb6f830",
+        "name": "Poll every 0.2 s",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "0.2",
+        "crontab": "",
+        "once": true,
+        "onceDelay": "1",
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 150,
+        "y": 240,
+        "wires": [
+            [
+                "dd2195826baebe51"
+            ]
+        ]
+    },
+    {
+        "id": "dd2195826baebe51",
+        "type": "http request",
+        "z": "29cb921ebfb6f830",
+        "name": "GET gyroX gyroY gyroZ",
+        "method": "GET",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "http://172.19.182.135/8080/get?gyrX&gyrY&gyrZ",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": true,
+        "headers": [],
+        "x": 430,
+        "y": 240,
+        "wires": [
+            [
+                "68dcc9c81fecbad8",
+                "753e9f88d37c3a94"
+            ]
+        ]
+    },
+    {
+        "id": "68dcc9c81fecbad8",
+        "type": "function",
+        "z": "29cb921ebfb6f830",
+        "name": "Parse gyro JSON",
+        "func": "try {\n    let gx = msg.payload.buffer.gyrX.buffer[0];\n    let gy = msg.payload.buffer.gyrY.buffer[0];\n    let gz = msg.payload.buffer.gyrZ.buffer[0];\n\n    msg.payload = {\n        gx: gx,\n        gy: gy,\n        gz: gz,\n        timestamp: new Date().toISOString()\n    };\n    return msg;\n} catch (e) {\n    node.error('Parse error: ' + e.message, msg);\n    return null;\n}",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 640,
+        "y": 120,
+        "wires": [
+            [
+                "482966c80209daa2",
+                "647a15a8aed874ae",
+                "1b5d5021626ab2c8",
+                "148f69db6d85cb53"
+            ]
+        ]
+    },
+    {
+        "id": "647a15a8aed874ae",
+        "type": "change",
+        "z": "29cb921ebfb6f830",
+        "name": "GX payload",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "payload.gx",
+                "tot": "msg"
+            }
+        ],
+        "x": 860,
+        "y": 200,
+        "wires": [
+            [
+                "47132457834f5d3c"
+            ]
+        ]
+    },
+    {
+        "id": "1b5d5021626ab2c8",
+        "type": "change",
+        "z": "29cb921ebfb6f830",
+        "name": "GY payload",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "payload.gy",
+                "tot": "msg"
+            }
+        ],
+        "x": 860,
+        "y": 240,
+        "wires": [
+            [
+                "4a168460497664d0"
+            ]
+        ]
+    },
+    {
+        "id": "148f69db6d85cb53",
+        "type": "change",
+        "z": "29cb921ebfb6f830",
+        "name": "GZ payload",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "payload.gz",
+                "tot": "msg"
+            }
+        ],
+        "x": 860,
+        "y": 280,
+        "wires": [
+            [
+                "8f2ac867ab740ee9"
+            ]
+        ]
+    },
+    {
+        "id": "47132457834f5d3c",
+        "type": "ui_gauge",
+        "z": "29cb921ebfb6f830",
+        "name": "Gyro X",
+        "group": "cb0b63fd2b6e5178",
+        "order": 1,
+        "width": "4",
+        "height": "4",
+        "gtype": "gage",
+        "title": "Gyro X",
+        "label": "rad/s",
+        "format": "{{value}}",
+        "min": "-10",
+        "max": "10",
+        "colors": [
+            "#00b500",
+            "#e6e600",
+            "#ca3838"
+        ],
+        "seg1": "3",
+        "seg2": "7",
+        "className": "",
+        "x": 1080,
+        "y": 200,
+        "wires": []
+    },
+    {
+        "id": "4a168460497664d0",
+        "type": "ui_gauge",
+        "z": "29cb921ebfb6f830",
+        "name": "Gyro Y",
+        "group": "cb0b63fd2b6e5178",
+        "order": 2,
+        "width": "4",
+        "height": "4",
+        "gtype": "gage",
+        "title": "Gyro Y",
+        "label": "rad/s",
+        "format": "{{value}}",
+        "min": "-10",
+        "max": "10",
+        "colors": [
+            "#00b500",
+            "#e6e600",
+            "#ca3838"
+        ],
+        "seg1": "3",
+        "seg2": "7",
+        "className": "",
+        "x": 1080,
+        "y": 240,
+        "wires": []
+    },
+    {
+        "id": "8f2ac867ab740ee9",
+        "type": "ui_gauge",
+        "z": "29cb921ebfb6f830",
+        "name": "Gyro Z",
+        "group": "cb0b63fd2b6e5178",
+        "order": 3,
+        "width": "4",
+        "height": "4",
+        "gtype": "gage",
+        "title": "Gyro Z",
+        "label": "rad/s",
+        "format": "{{value}}",
+        "min": "-10",
+        "max": "10",
+        "colors": [
+            "#00b500",
+            "#e6e600",
+            "#ca3838"
+        ],
+        "seg1": "3",
+        "seg2": "7",
+        "className": "",
+        "x": 1080,
+        "y": 280,
+        "wires": []
+    },
+    {
+        "id": "753e9f88d37c3a94",
+        "type": "debug",
+        "z": "29cb921ebfb6f830",
+        "name": "Raw JSON",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": true,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "msg",
+        "x": 630,
+        "y": 400,
+        "wires": []
+    },
+    {
+        "id": "482966c80209daa2",
+        "type": "debug",
+        "z": "29cb921ebfb6f830",
+        "name": "Parsed gyro",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": true,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "payload",
+        "statusType": "auto",
+        "x": 860,
+        "y": 120,
+        "wires": []
+    },
+    {
+        "id": "cb0b63fd2b6e5178",
+        "type": "ui_group",
+        "name": "Gyroscope Gauges",
+        "tab": "fff8d0c686b9cd40",
+        "order": 1,
+        "disp": true,
+        "width": "12",
+        "collapse": false
+    },
+    {
+        "id": "fff8d0c686b9cd40",
+        "type": "ui_tab",
+        "name": "Gyroscope Dashboard",
+        "icon": "dashboard",
+        "disabled": false,
+        "hidden": false
+    },
+    {
+        "id": "9de993995a30c518",
+        "type": "global-config",
+        "env": [],
+        "modules": {
+            "node-red-dashboard": "3.6.6"
+        }
+    }
+]
