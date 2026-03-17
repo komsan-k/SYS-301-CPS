@@ -1,0 +1,458 @@
+[
+  {
+    "id": "flow_smartphone_motion",
+    "type": "tab",
+    "label": "Smartphone Motion Lab",
+    "disabled": false,
+    "info": "Converted from VPython polling code to Node-RED dashboard flow"
+  },
+  {
+    "id": "ui_tab_motion",
+    "type": "ui_tab",
+    "name": "Motion Dashboard",
+    "icon": "dashboard",
+    "disabled": false,
+    "hidden": false
+  },
+  {
+    "id": "ui_group_motion",
+    "type": "ui_group",
+    "name": "Phone Orientation",
+    "tab": "ui_tab_motion",
+    "order": 1,
+    "disp": true,
+    "width": "12",
+    "collapse": false
+  },
+  {
+    "id": "inject_poll",
+    "type": "inject",
+    "z": "flow_smartphone_motion",
+    "name": "Poll every 0.2s",
+    "props": [
+      {
+        "p": "payload"
+      }
+    ],
+    "repeat": "0.2",
+    "crontab": "",
+    "once": true,
+    "onceDelay": "1",
+    "topic": "",
+    "payload": "",
+    "payloadType": "date",
+    "x": 140,
+    "y": 100,
+    "wires": [
+      [
+        "http_motion"
+      ]
+    ]
+  },
+  {
+    "id": "http_motion",
+    "type": "http request",
+    "z": "flow_smartphone_motion",
+    "name": "GET pitch roll yaw",
+    "method": "GET",
+    "ret": "obj",
+    "paytoqs": "ignore",
+    "url": "http://192.168.1.8:8080/get?pitch&roll&yaw",
+    "tls": "",
+    "persist": false,
+    "proxy": "",
+    "insecureHTTPParser": false,
+    "authType": "",
+    "senderr": false,
+    "headers": [],
+    "x": 380,
+    "y": 100,
+    "wires": [
+      [
+        "fn_extract_compute"
+      ]
+    ]
+  },
+  {
+    "id": "fn_extract_compute",
+    "type": "function",
+    "z": "flow_smartphone_motion",
+    "name": "Extract + radians + axis/up",
+    "func": "try {\n    let data = msg.payload;\n\n    let pitchDeg = data.buffer.pitch.buffer[0];\n    let rollDeg  = data.buffer.roll.buffer[0];\n    let yawDeg   = data.buffer.yaw.buffer[0];\n\n    let pitch = pitchDeg * Math.PI / 180;\n    let roll  = rollDeg  * Math.PI / 180;\n    let yaw   = yawDeg   * Math.PI / 180;\n\n    let axis_x = Math.cos(yaw) * Math.cos(pitch);\n    let axis_y = Math.sin(pitch);\n    let axis_z = Math.sin(yaw) * Math.cos(pitch);\n\n    let up_x = -Math.sin(roll);\n    let up_y =  Math.cos(roll);\n    let up_z = 0;\n\n    msg.pitchDeg = pitchDeg;\n    msg.rollDeg = rollDeg;\n    msg.yawDeg = yawDeg;\n\n    msg.pitch = pitch;\n    msg.roll = roll;\n    msg.yaw = yaw;\n\n    msg.axis_x = axis_x;\n    msg.axis_y = axis_y;\n    msg.axis_z = axis_z;\n\n    msg.up_x = up_x;\n    msg.up_y = up_y;\n    msg.up_z = up_z;\n\n    msg.payload = {\n        pitchDeg: pitchDeg,\n        rollDeg: rollDeg,\n        yawDeg: yawDeg,\n        pitch: pitch,\n        roll: roll,\n        yaw: yaw,\n        axis_x: axis_x,\n        axis_y: axis_y,\n        axis_z: axis_z,\n        up_x: up_x,\n        up_y: up_y,\n        up_z: up_z\n    };\n\n    return msg;\n} catch(err) {\n    return null;\n}",
+    "outputs": 1,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 650,
+    "y": 100,
+    "wires": [
+      [
+        "chg_pitch_deg",
+        "chg_roll_deg",
+        "chg_yaw_deg",
+        "chg_pitch_rad",
+        "chg_roll_rad",
+        "chg_yaw_rad",
+        "chg_axis",
+        "chg_up",
+        "ui_phone_template",
+        "fn_status"
+      ]
+    ]
+  },
+  {
+    "id": "chg_pitch_deg",
+    "type": "change",
+    "z": "flow_smartphone_motion",
+    "name": "Pitch deg",
+    "rules": [
+      {
+        "t": "set",
+        "p": "payload",
+        "pt": "msg",
+        "to": "pitchDeg",
+        "tot": "msg"
+      }
+    ],
+    "x": 900,
+    "y": 40,
+    "wires": [
+      [
+        "ui_pitch_deg"
+      ]
+    ]
+  },
+  {
+    "id": "chg_roll_deg",
+    "type": "change",
+    "z": "flow_smartphone_motion",
+    "name": "Roll deg",
+    "rules": [
+      {
+        "t": "set",
+        "p": "payload",
+        "pt": "msg",
+        "to": "rollDeg",
+        "tot": "msg"
+      }
+    ],
+    "x": 900,
+    "y": 80,
+    "wires": [
+      [
+        "ui_roll_deg"
+      ]
+    ]
+  },
+  {
+    "id": "chg_yaw_deg",
+    "type": "change",
+    "z": "flow_smartphone_motion",
+    "name": "Yaw deg",
+    "rules": [
+      {
+        "t": "set",
+        "p": "payload",
+        "pt": "msg",
+        "to": "yawDeg",
+        "tot": "msg"
+      }
+    ],
+    "x": 900,
+    "y": 120,
+    "wires": [
+      [
+        "ui_yaw_deg"
+      ]
+    ]
+  },
+  {
+    "id": "chg_pitch_rad",
+    "type": "change",
+    "z": "flow_smartphone_motion",
+    "name": "Pitch rad",
+    "rules": [
+      {
+        "t": "set",
+        "p": "payload",
+        "pt": "msg",
+        "to": "pitch",
+        "tot": "msg"
+      }
+    ],
+    "x": 900,
+    "y": 160,
+    "wires": [
+      [
+        "ui_pitch_rad"
+      ]
+    ]
+  },
+  {
+    "id": "chg_roll_rad",
+    "type": "change",
+    "z": "flow_smartphone_motion",
+    "name": "Roll rad",
+    "rules": [
+      {
+        "t": "set",
+        "p": "payload",
+        "pt": "msg",
+        "to": "roll",
+        "tot": "msg"
+      }
+    ],
+    "x": 900,
+    "y": 200,
+    "wires": [
+      [
+        "ui_roll_rad"
+      ]
+    ]
+  },
+  {
+    "id": "chg_yaw_rad",
+    "type": "change",
+    "z": "flow_smartphone_motion",
+    "name": "Yaw rad",
+    "rules": [
+      {
+        "t": "set",
+        "p": "payload",
+        "pt": "msg",
+        "to": "yaw",
+        "tot": "msg"
+      }
+    ],
+    "x": 900,
+    "y": 240,
+    "wires": [
+      [
+        "ui_yaw_rad"
+      ]
+    ]
+  },
+  {
+    "id": "chg_axis",
+    "type": "function",
+    "z": "flow_smartphone_motion",
+    "name": "Axis text",
+    "func": "msg.payload = `(${msg.axis_x.toFixed(3)}, ${msg.axis_y.toFixed(3)}, ${msg.axis_z.toFixed(3)})`;\nreturn msg;",
+    "outputs": 1,
+    "noerr": 0,
+    "x": 890,
+    "y": 280,
+    "wires": [
+      [
+        "ui_axis"
+      ]
+    ]
+  },
+  {
+    "id": "chg_up",
+    "type": "function",
+    "z": "flow_smartphone_motion",
+    "name": "Up text",
+    "func": "msg.payload = `(${msg.up_x.toFixed(3)}, ${msg.up_y.toFixed(3)}, ${msg.up_z.toFixed(3)})`;\nreturn msg;",
+    "outputs": 1,
+    "noerr": 0,
+    "x": 890,
+    "y": 320,
+    "wires": [
+      [
+        "ui_up"
+      ]
+    ]
+  },
+  {
+    "id": "fn_status",
+    "type": "function",
+    "z": "flow_smartphone_motion",
+    "name": "Status line",
+    "func": "msg.payload = `Pitch:${msg.pitch.toFixed(2)} Roll:${msg.roll.toFixed(2)} Yaw:${msg.yaw.toFixed(2)}`;\nreturn msg;",
+    "outputs": 1,
+    "noerr": 0,
+    "x": 900,
+    "y": 360,
+    "wires": [
+      [
+        "ui_status"
+      ]
+    ]
+  },
+  {
+    "id": "ui_pitch_deg",
+    "type": "ui_text",
+    "z": "flow_smartphone_motion",
+    "group": "ui_group_motion",
+    "order": 1,
+    "width": "4",
+    "height": "1",
+    "name": "Pitch deg",
+    "label": "Pitch (deg)",
+    "format": "{{msg.payload.toFixed(2)}}",
+    "layout": "row-spread",
+    "className": "",
+    "x": 1110,
+    "y": 40,
+    "wires": []
+  },
+  {
+    "id": "ui_roll_deg",
+    "type": "ui_text",
+    "z": "flow_smartphone_motion",
+    "group": "ui_group_motion",
+    "order": 2,
+    "width": "4",
+    "height": "1",
+    "name": "Roll deg",
+    "label": "Roll (deg)",
+    "format": "{{msg.payload.toFixed(2)}}",
+    "layout": "row-spread",
+    "className": "",
+    "x": 1110,
+    "y": 80,
+    "wires": []
+  },
+  {
+    "id": "ui_yaw_deg",
+    "type": "ui_text",
+    "z": "flow_smartphone_motion",
+    "group": "ui_group_motion",
+    "order": 3,
+    "width": "4",
+    "height": "1",
+    "name": "Yaw deg",
+    "label": "Yaw (deg)",
+    "format": "{{msg.payload.toFixed(2)}}",
+    "layout": "row-spread",
+    "className": "",
+    "x": 1110,
+    "y": 120,
+    "wires": []
+  },
+  {
+    "id": "ui_pitch_rad",
+    "type": "ui_text",
+    "z": "flow_smartphone_motion",
+    "group": "ui_group_motion",
+    "order": 4,
+    "width": "4",
+    "height": "1",
+    "name": "Pitch rad",
+    "label": "Pitch (rad)",
+    "format": "{{msg.payload.toFixed(3)}}",
+    "layout": "row-spread",
+    "className": "",
+    "x": 1110,
+    "y": 160,
+    "wires": []
+  },
+  {
+    "id": "ui_roll_rad",
+    "type": "ui_text",
+    "z": "flow_smartphone_motion",
+    "group": "ui_group_motion",
+    "order": 5,
+    "width": "4",
+    "height": "1",
+    "name": "Roll rad",
+    "label": "Roll (rad)",
+    "format": "{{msg.payload.toFixed(3)}}",
+    "layout": "row-spread",
+    "className": "",
+    "x": 1110,
+    "y": 200,
+    "wires": []
+  },
+  {
+    "id": "ui_yaw_rad",
+    "type": "ui_text",
+    "z": "flow_smartphone_motion",
+    "group": "ui_group_motion",
+    "order": 6,
+    "width": "4",
+    "height": "1",
+    "name": "Yaw rad",
+    "label": "Yaw (rad)",
+    "format": "{{msg.payload.toFixed(3)}}",
+    "layout": "row-spread",
+    "className": "",
+    "x": 1110,
+    "y": 240,
+    "wires": []
+  },
+  {
+    "id": "ui_axis",
+    "type": "ui_text",
+    "z": "flow_smartphone_motion",
+    "group": "ui_group_motion",
+    "order": 7,
+    "width": "6",
+    "height": "1",
+    "name": "Axis",
+    "label": "Axis",
+    "format": "{{msg.payload}}",
+    "layout": "row-spread",
+    "className": "",
+    "x": 1100,
+    "y": 280,
+    "wires": []
+  },
+  {
+    "id": "ui_up",
+    "type": "ui_text",
+    "z": "flow_smartphone_motion",
+    "group": "ui_group_motion",
+    "order": 8,
+    "width": "6",
+    "height": "1",
+    "name": "Up",
+    "label": "Up",
+    "format": "{{msg.payload}}",
+    "layout": "row-spread",
+    "className": "",
+    "x": 1100,
+    "y": 320,
+    "wires": []
+  },
+  {
+    "id": "ui_status",
+    "type": "ui_text",
+    "z": "flow_smartphone_motion",
+    "group": "ui_group_motion",
+    "order": 9,
+    "width": "12",
+    "height": "1",
+    "name": "Status",
+    "label": "Info",
+    "format": "{{msg.payload}}",
+    "layout": "col-center",
+    "className": "",
+    "x": 1110,
+    "y": 360,
+    "wires": []
+  },
+  {
+    "id": "ui_phone_template",
+    "type": "ui_template",
+    "z": "flow_smartphone_motion",
+    "group": "ui_group_motion",
+    "name": "Phone animation",
+    "order": 10,
+    "width": "12",
+    "height": "8",
+    "format": "<div style=\"width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#ffffff;\">\n  <div style=\"font-size:20px;font-weight:bold;margin-bottom:14px;color:#333;\">Smartphone Motion Lab</div>\n  <div style=\"perspective:1000px;width:260px;height:380px;display:flex;justify-content:center;align-items:center;\">\n    <div id=\"phone3d\" style=\"width:150px;height:280px;border-radius:24px;background:linear-gradient(180deg,#4e8df5,#2563eb);border:6px solid #173a8f;box-shadow:0 18px 34px rgba(0,0,0,0.25);position:relative;transform-style:preserve-3d;transition:transform 0.1s linear;\">\n      <div style=\"position:absolute;top:10px;left:50%;transform:translateX(-50%);width:50px;height:6px;background:#173a8f;border-radius:6px;\"></div>\n      <div style=\"position:absolute;top:26px;left:50%;transform:translateX(-50%);width:14px;height:14px;background:#173a8f;border-radius:50%;\"></div>\n      <div style=\"position:absolute;bottom:14px;left:50%;transform:translateX(-50%);width:36px;height:36px;border:3px solid rgba(255,255,255,0.85);border-radius:50%;\"></div>\n    </div>\n  </div>\n  <div style=\"margin-top:16px;text-align:center;font-size:14px;line-height:1.6;color:#333;\">\n    <div><b>Pitch:</b> {{msg.payload.pitchDeg.toFixed(2)}}°</div>\n    <div><b>Roll:</b> {{msg.payload.rollDeg.toFixed(2)}}°</div>\n    <div><b>Yaw:</b> {{msg.payload.yawDeg.toFixed(2)}}°</div>\n  </div>\n</div>\n<script>\n(function(scope){\n  scope.$watch('msg', function(msg){\n    if(!msg || !msg.payload) return;\n    var p = msg.payload.pitchDeg || 0;\n    var r = msg.payload.rollDeg || 0;\n    var y = msg.payload.yawDeg || 0;\n    var el = document.getElementById('phone3d');\n    if(el){\n      el.style.transform = 'rotateX(' + (-p) + 'deg) rotateY(' + y + 'deg) rotateZ(' + r + 'deg)';\n    }\n  });\n})(scope);\n</script>",
+    "storeOutMessages": true,
+    "fwdInMessages": true,
+    "resendOnRefresh": true,
+    "templateScope": "local",
+    "className": "",
+    "x": 890,
+    "y": 430,
+    "wires": [
+      []
+    ]
+  }
+]
