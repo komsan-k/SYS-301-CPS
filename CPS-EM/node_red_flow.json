@@ -1,0 +1,4 @@
+[
+{"id":"1","type":"mqtt in","topic":"esp32/rssi","name":"RSSI"},
+{"id":"2","type":"debug"}
+]
