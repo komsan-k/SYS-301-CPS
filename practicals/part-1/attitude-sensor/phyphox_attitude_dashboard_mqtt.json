@@ -1,0 +1,402 @@
+[
+  {
+    "id": "phy_att_tab_001",
+    "type": "tab",
+    "label": "phyphox Attitude Twin",
+    "disabled": false,
+    "info": "phyphox Attitude (Euler) -> Node-RED Dashboard -> MQTT"
+  },
+  {
+    "id": "ui_tab_att_001",
+    "type": "ui_tab",
+    "name": "phyphox Attitude",
+    "icon": "dashboard",
+    "disabled": false,
+    "hidden": false
+  },
+  {
+    "id": "ui_group_att_001",
+    "type": "ui_group",
+    "name": "RPY Dashboard",
+    "tab": "ui_tab_att_001",
+    "order": 1,
+    "disp": true,
+    "width": "12",
+    "collapse": false
+  },
+  {
+    "id": "mqtt_broker_att_001",
+    "type": "mqtt-broker",
+    "name": "Local MQTT",
+    "broker": "127.0.0.1",
+    "port": "1883",
+    "clientid": "",
+    "usetls": false,
+    "protocolVersion": "4",
+    "keepalive": "60",
+    "cleansession": true,
+    "birthTopic": "",
+    "birthQos": "0",
+    "birthPayload": "",
+    "closeTopic": "",
+    "closeQos": "0",
+    "closePayload": "",
+    "willTopic": "",
+    "willQos": "0",
+    "willPayload": ""
+  },
+  {
+    "id": "inject_att_001",
+    "type": "inject",
+    "z": "phy_att_tab_001",
+    "name": "Poll every 0.5 s",
+    "props": [
+      {
+        "p": "payload"
+      }
+    ],
+    "repeat": "0.5",
+    "crontab": "",
+    "once": true,
+    "onceDelay": "1",
+    "topic": "",
+    "payload": "",
+    "payloadType": "date",
+    "x": 160,
+    "y": 100,
+    "wires": [
+      [
+        "fn_set_url_att_001"
+      ]
+    ]
+  },
+  {
+    "id": "fn_set_url_att_001",
+    "type": "function",
+    "z": "phy_att_tab_001",
+    "name": "Set phyphox URL",
+    "func": "const BASE_URL = \"http://172.19.177.163:8080\";\nmsg.url = `${BASE_URL}/get?roll=full&pitch=full&yaw=full`;\nreturn msg;\n",
+    "outputs": 1,
+    "noerr": 0,
+    "x": 380,
+    "y": 100,
+    "wires": [
+      [
+        "http_att_001"
+      ]
+    ]
+  },
+  {
+    "id": "http_att_001",
+    "type": "http request",
+    "z": "phy_att_tab_001",
+    "name": "GET phyphox Attitude",
+    "method": "GET",
+    "ret": "obj",
+    "paytoqs": "ignore",
+    "url": "",
+    "tls": "",
+    "persist": false,
+    "proxy": "",
+    "insecureHTTPParser": false,
+    "authType": "",
+    "senderr": true,
+    "headers": [],
+    "x": 620,
+    "y": 100,
+    "wires": [
+      [
+        "fn_extract_att_001"
+      ],
+      [
+        "debug_http_err_001"
+      ]
+    ]
+  },
+  {
+    "id": "fn_extract_att_001",
+    "type": "function",
+    "z": "phy_att_tab_001",
+    "name": "Extract stable RPY",
+    "func": "try {\n    const data = msg.payload;\n    const buffers = data.buffer || {};\n\n    function latest(name) {\n        const obj = buffers[name];\n        if (!obj || !obj.buffer || obj.buffer.length === 0) return null;\n        return Number(obj.buffer[obj.buffer.length - 1]);\n    }\n\n    const rollDeg = latest(\"roll\");\n    const pitchDeg = latest(\"pitch\");\n    const yawDeg = latest(\"yaw\");\n\n    if (rollDeg === null || pitchDeg === null || yawDeg === null) {\n        node.warn(\"roll/pitch/yaw buffers not found. Check phyphox experiment and buffer names.\");\n        return null;\n    }\n\n    const roll = rollDeg * Math.PI / 180.0;\n    const pitch = pitchDeg * Math.PI / 180.0;\n    const yaw = yawDeg * Math.PI / 180.0;\n\n    const axis_x = Math.cos(yaw) * Math.cos(pitch);\n    const axis_y = Math.sin(pitch);\n    const axis_z = Math.sin(yaw) * Math.cos(pitch);\n\n    const up_x = Math.cos(yaw) * Math.sin(pitch) * Math.sin(roll) - Math.sin(yaw) * Math.cos(roll);\n    const up_y = Math.cos(pitch) * Math.sin(roll);\n    const up_z = Math.sin(yaw) * Math.sin(pitch) * Math.sin(roll) + Math.cos(yaw) * Math.cos(roll);\n\n    const full = {\n        ts: Date.now(),\n        rollDeg,\n        pitchDeg,\n        yawDeg,\n        roll,\n        pitch,\n        yaw,\n        axis_x,\n        axis_y,\n        axis_z,\n        up_x,\n        up_y,\n        up_z\n    };\n\n    return [\n        {payload: rollDeg},\n        {payload: pitchDeg},\n        {payload: yawDeg},\n        {payload: full},\n        {topic: \"cps/lab/attitude/rpy\", payload: full}\n    ];\n\n} catch (err) {\n    node.warn(\"Attitude RPY error: \" + err.message);\n    return null;\n}\n",
+    "outputs": 5,
+    "noerr": 0,
+    "x": 860,
+    "y": 100,
+    "wires": [
+      [
+        "g_roll_001",
+        "chart_roll_001"
+      ],
+      [
+        "g_pitch_001",
+        "chart_pitch_001"
+      ],
+      [
+        "g_yaw_001",
+        "chart_yaw_001"
+      ],
+      [
+        "ui_json_001",
+        "debug_rpy_001"
+      ],
+      [
+        "mqtt_out_att_001"
+      ]
+    ]
+  },
+  {
+    "id": "mqtt_out_att_001",
+    "type": "mqtt out",
+    "z": "phy_att_tab_001",
+    "name": "Publish RPY MQTT",
+    "topic": "",
+    "qos": "",
+    "retain": "",
+    "respTopic": "",
+    "contentType": "",
+    "userProps": "",
+    "correl": "",
+    "expiry": "",
+    "broker": "mqtt_broker_att_001",
+    "x": 1110,
+    "y": 180,
+    "wires": []
+  },
+  {
+    "id": "g_roll_001",
+    "type": "ui_gauge",
+    "z": "phy_att_tab_001",
+    "name": "Roll",
+    "group": "ui_group_att_001",
+    "order": 1,
+    "width": 4,
+    "height": 3,
+    "gtype": "gage",
+    "title": "Roll",
+    "label": "deg",
+    "format": "{{value}}",
+    "min": "-180",
+    "max": "180",
+    "colors": [
+      "#00b500",
+      "#e6e600",
+      "#ca3838"
+    ],
+    "seg1": "60",
+    "seg2": "120",
+    "className": "",
+    "x": 1110,
+    "y": 40,
+    "wires": []
+  },
+  {
+    "id": "g_pitch_001",
+    "type": "ui_gauge",
+    "z": "phy_att_tab_001",
+    "name": "Pitch",
+    "group": "ui_group_att_001",
+    "order": 2,
+    "width": 4,
+    "height": 3,
+    "gtype": "gage",
+    "title": "Pitch",
+    "label": "deg",
+    "format": "{{value}}",
+    "min": "-180",
+    "max": "180",
+    "colors": [
+      "#00b500",
+      "#e6e600",
+      "#ca3838"
+    ],
+    "seg1": "60",
+    "seg2": "120",
+    "className": "",
+    "x": 1110,
+    "y": 80,
+    "wires": []
+  },
+  {
+    "id": "g_yaw_001",
+    "type": "ui_gauge",
+    "z": "phy_att_tab_001",
+    "name": "Yaw",
+    "group": "ui_group_att_001",
+    "order": 3,
+    "width": 4,
+    "height": 3,
+    "gtype": "gage",
+    "title": "Yaw",
+    "label": "deg",
+    "format": "{{value}}",
+    "min": "-180",
+    "max": "180",
+    "colors": [
+      "#00b500",
+      "#e6e600",
+      "#ca3838"
+    ],
+    "seg1": "60",
+    "seg2": "120",
+    "className": "",
+    "x": 1110,
+    "y": 120,
+    "wires": []
+  },
+  {
+    "id": "chart_roll_001",
+    "type": "ui_chart",
+    "z": "phy_att_tab_001",
+    "name": "Roll Chart",
+    "group": "ui_group_att_001",
+    "order": 4,
+    "width": 12,
+    "height": 4,
+    "label": "Roll",
+    "chartType": "line",
+    "legend": "false",
+    "xformat": "HH:mm:ss",
+    "interpolate": "linear",
+    "nodata": "",
+    "dot": false,
+    "ymin": "-180",
+    "ymax": "180",
+    "removeOlder": "2",
+    "removeOlderPoints": "",
+    "removeOlderUnit": "3600",
+    "cutout": 0,
+    "useOneColor": false,
+    "useUTC": false,
+    "colors": [
+      "#1f77b4"
+    ],
+    "outputs": 1,
+    "useDifferentColor": false,
+    "className": "",
+    "x": 1110,
+    "y": 260,
+    "wires": [
+      []
+    ]
+  },
+  {
+    "id": "chart_pitch_001",
+    "type": "ui_chart",
+    "z": "phy_att_tab_001",
+    "name": "Pitch Chart",
+    "group": "ui_group_att_001",
+    "order": 5,
+    "width": 12,
+    "height": 4,
+    "label": "Pitch",
+    "chartType": "line",
+    "legend": "false",
+    "xformat": "HH:mm:ss",
+    "interpolate": "linear",
+    "nodata": "",
+    "dot": false,
+    "ymin": "-180",
+    "ymax": "180",
+    "removeOlder": "2",
+    "removeOlderPoints": "",
+    "removeOlderUnit": "3600",
+    "cutout": 0,
+    "useOneColor": false,
+    "useUTC": false,
+    "colors": [
+      "#ff7f0e"
+    ],
+    "outputs": 1,
+    "useDifferentColor": false,
+    "className": "",
+    "x": 1110,
+    "y": 320,
+    "wires": [
+      []
+    ]
+  },
+  {
+    "id": "chart_yaw_001",
+    "type": "ui_chart",
+    "z": "phy_att_tab_001",
+    "name": "Yaw Chart",
+    "group": "ui_group_att_001",
+    "order": 6,
+    "width": 12,
+    "height": 4,
+    "label": "Yaw",
+    "chartType": "line",
+    "legend": "false",
+    "xformat": "HH:mm:ss",
+    "interpolate": "linear",
+    "nodata": "",
+    "dot": false,
+    "ymin": "-180",
+    "ymax": "180",
+    "removeOlder": "2",
+    "removeOlderPoints": "",
+    "removeOlderUnit": "3600",
+    "cutout": 0,
+    "useOneColor": false,
+    "useUTC": false,
+    "colors": [
+      "#2ca02c"
+    ],
+    "outputs": 1,
+    "useDifferentColor": false,
+    "className": "",
+    "x": 1110,
+    "y": 380,
+    "wires": [
+      []
+    ]
+  },
+  {
+    "id": "ui_json_001",
+    "type": "ui_text",
+    "z": "phy_att_tab_001",
+    "group": "ui_group_att_001",
+    "order": 7,
+    "width": 12,
+    "height": 1,
+    "name": "Latest JSON",
+    "label": "Latest RPY JSON",
+    "format": "{{msg.payload | json}}",
+    "layout": "col-center",
+    "className": "",
+    "x": 1110,
+    "y": 440,
+    "wires": []
+  },
+  {
+    "id": "debug_rpy_001",
+    "type": "debug",
+    "z": "phy_att_tab_001",
+    "name": "RPY debug",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": false,
+    "complete": "payload",
+    "targetType": "msg",
+    "x": 1110,
+    "y": 500,
+    "wires": []
+  },
+  {
+    "id": "debug_http_err_001",
+    "type": "debug",
+    "z": "phy_att_tab_001",
+    "name": "HTTP error/debug",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": false,
+    "complete": "true",
+    "targetType": "full",
+    "x": 860,
+    "y": 40,
+    "wires": []
+  }
+]
