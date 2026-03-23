@@ -4,7 +4,7 @@
 
 ## 📘 Overview
 
-If you are using the **phyphox app** to obtain orientation data (similar to an MPU6050), there are **two main approaches**:
+In using the **phyphox app** to obtain orientation data (similar to an MPU6050), there are **two main approaches**:
 
 1. Using built-in "smart" sensors (easy)
 2. Computing orientation manually from raw data
