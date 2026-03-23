@@ -2,12 +2,8 @@
 
 This flow uses the phyphox Attitude (Euler) experiment and polls:
 
-`http://172.19.177.163:8080/get?roll=full&pitch=full&yaw=full`
+`http://172.xx.xxx.xxx/get?roll&pitch&yaw`
 
-## Important
-Use a colon before the port:
-- Correct: `http://172.19.177.163:8080/`
-- Wrong: `http://172.19.177.163/8080/`
 
 ## What it does
 - Polls phyphox every 0.5 s
