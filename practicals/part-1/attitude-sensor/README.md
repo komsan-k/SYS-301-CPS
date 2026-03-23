@@ -63,16 +63,6 @@ http://172.19.177.163:8080/get?yaw&pitch&roll
 
 ---
 
-## 🔧 5. Useful API Commands
-
-| Action | URL |
-|------|-----|
-| Clear Data | http://172.19.177.163:8080/control?command=clear |
-| Start Recording | http://172.19.177.163:8080/control?command=start |
-| Stop Recording | http://172.19.177.163:8080/control?command=stop |
-| Export Excel | http://172.19.177.163:8080/export?format=Excel |
-
----
 
 ## ⚠️ Notes
 
