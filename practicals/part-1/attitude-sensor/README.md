@@ -20,7 +20,7 @@ This flow uses the phyphox Attitude (Euler) experiment and polls:
 
 ## If it still fails
 Open in browser first:
-- `http://172.19.177.163:8080/`
-- `http://172.19.177.163:8080/get`
+- `http://172.19.177.163`
+- `http://172.19.177.163/get?yaw&pitch&roll`
 
 If `/get?roll=full&pitch=full&yaw=full` fails, inspect the returned JSON and confirm the buffer names are really `roll`, `pitch`, and `yaw`.
