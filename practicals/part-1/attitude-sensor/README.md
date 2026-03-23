@@ -84,7 +84,8 @@ JSON (roll, pitch, yaw)
         ↓
 Node-RED / Python / Dashboard
 ```
-
+---
+---
 
 
 # phyphox Attitude → Node-RED Dashboard + MQTT
