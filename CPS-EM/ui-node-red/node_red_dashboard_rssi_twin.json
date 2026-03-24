@@ -1,0 +1,453 @@
+[
+  {
+    "id": "tab_rssi_twin",
+    "type": "tab",
+    "label": "ESP32 RSSI Digital Twin Dashboard",
+    "disabled": false,
+    "info": "Full Node-RED dashboard for ESP32 RSSI monitoring"
+  },
+  {
+    "id": "mqtt_broker_cfg",
+    "type": "mqtt-broker",
+    "name": "Public MQTT Broker",
+    "broker": "broker.hivemq.com",
+    "port": "1883",
+    "clientid": "",
+    "autoConnect": true,
+    "usetls": false,
+    "protocolVersion": "4",
+    "keepalive": "60",
+    "cleansession": true,
+    "birthTopic": "",
+    "birthQos": "0",
+    "birthPayload": "",
+    "closeTopic": "",
+    "closeQos": "0",
+    "closePayload": "",
+    "willTopic": "",
+    "willQos": "0",
+    "willPayload": ""
+  },
+  {
+    "id": "ui_tab_rssi",
+    "type": "ui_tab",
+    "name": "RSSI Twin",
+    "icon": "dashboard",
+    "disabled": false,
+    "hidden": false
+  },
+  {
+    "id": "ui_group_live",
+    "type": "ui_group",
+    "name": "Live RSSI Status",
+    "tab": "ui_tab_rssi",
+    "order": 1,
+    "disp": true,
+    "width": "12",
+    "collapse": false
+  },
+  {
+    "id": "ui_group_chart",
+    "type": "ui_group",
+    "name": "Trend and History",
+    "tab": "ui_tab_rssi",
+    "order": 2,
+    "disp": true,
+    "width": "12",
+    "collapse": false
+  },
+  {
+    "id": "ui_group_stats",
+    "type": "ui_group",
+    "name": "Twin Analytics",
+    "tab": "ui_tab_rssi",
+    "order": 3,
+    "disp": true,
+    "width": "12",
+    "collapse": false
+  },
+  {
+    "id": "mqtt_in_rssi",
+    "type": "mqtt in",
+    "z": "tab_rssi_twin",
+    "name": "ESP32 RSSI Input",
+    "topic": "esp32/rssi",
+    "qos": "0",
+    "datatype": "auto",
+    "broker": "mqtt_broker_cfg",
+    "nl": false,
+    "rap": true,
+    "rh": 0,
+    "inputs": 0,
+    "x": 150,
+    "y": 100,
+    "wires": [
+      [
+        "json_or_number"
+      ]
+    ]
+  },
+  {
+    "id": "json_or_number",
+    "type": "json",
+    "z": "tab_rssi_twin",
+    "name": "Try JSON",
+    "property": "payload",
+    "action": "obj",
+    "pretty": false,
+    "x": 340,
+    "y": 80,
+    "wires": [
+      [
+        "normalize_payload"
+      ],
+      [
+        "normalize_payload"
+      ]
+    ]
+  },
+  {
+    "id": "normalize_payload",
+    "type": "function",
+    "z": "tab_rssi_twin",
+    "name": "Normalize RSSI Payload",
+    "func": "let rssi;\n\nif (typeof msg.payload === 'object' && msg.payload !== null) {\n    if (msg.payload.rssi !== undefined) {\n        rssi = Number(msg.payload.rssi);\n    } else if (msg.payload.value !== undefined) {\n        rssi = Number(msg.payload.value);\n    }\n} else {\n    rssi = Number(msg.payload);\n}\n\nif (!Number.isFinite(rssi)) {\n    return null;\n}\n\nlet quality = 'WEAK';\nlet color = '#ff4d4f';\nif (rssi >= -55) {\n    quality = 'STRONG';\n    color = '#52c41a';\n} else if (rssi >= -70) {\n    quality = 'MEDIUM';\n    color = '#faad14';\n}\n\nlet alert = (rssi < -70) ? 'ALERT: Weak signal' : 'Normal';\n\nlet now = new Date();\nmsg.payload = {\n    rssi: rssi,\n    quality: quality,\n    color: color,\n    alert: alert,\n    timestamp: now.toLocaleTimeString(),\n    ts: now.getTime()\n};\n\nreturn msg;",
+    "outputs": 1,
+    "noerr": 0,
+    "initialize": "context.set('history', []);",
+    "finalize": "",
+    "libs": [],
+    "x": 560,
+    "y": 100,
+    "wires": [
+      [
+        "fan_out_live",
+        "store_stats"
+      ]
+    ]
+  },
+  {
+    "id": "fan_out_live",
+    "type": "function",
+    "z": "tab_rssi_twin",
+    "name": "Prepare Dashboard Values",
+    "func": "return [\n    { payload: msg.payload.rssi },\n    { payload: msg.payload.quality },\n    { payload: msg.payload.alert },\n    { payload: msg.payload.rssi, topic: 'RSSI (dBm)' },\n    { payload: `Time: ${msg.payload.timestamp} | RSSI: ${msg.payload.rssi} dBm | State: ${msg.payload.quality}` },\n    { payload: { rssi: msg.payload.rssi, quality: msg.payload.quality, alert: msg.payload.alert, timestamp: msg.payload.timestamp } }\n];",
+    "outputs": 6,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 820,
+    "y": 100,
+    "wires": [
+      [
+        "ui_gauge_rssi"
+      ],
+      [
+        "ui_text_quality"
+      ],
+      [
+        "ui_text_alert"
+      ],
+      [
+        "ui_chart_rssi"
+      ],
+      [
+        "ui_text_status"
+      ],
+      [
+        "debug_live"
+      ]
+    ]
+  },
+  {
+    "id": "store_stats",
+    "type": "function",
+    "z": "tab_rssi_twin",
+    "name": "Compute Twin Analytics",
+    "func": "let history = context.get('history') || [];\nhistory.push(msg.payload.rssi);\nif (history.length > 60) history.shift();\ncontext.set('history', history);\n\nlet min = Math.min(...history);\nlet max = Math.max(...history);\nlet avg = history.reduce((a,b) => a+b, 0) / history.length;\nlet trend = 'STABLE';\nif (history.length >= 2) {\n    let delta = history[history.length - 1] - history[history.length - 2];\n    if (delta > 1) trend = 'IMPROVING';\n    else if (delta < -1) trend = 'DEGRADING';\n}\n\nreturn [\n    { payload: Number(avg.toFixed(2)) },\n    { payload: min },\n    { payload: max },\n    { payload: trend },\n    { payload: { series: ['RSSI Distribution'], data: [[\n        {x: 'Strong', y: history.filter(v => v >= -55).length},\n        {x: 'Medium', y: history.filter(v => v < -55 && v >= -70).length},\n        {x: 'Weak', y: history.filter(v => v < -70).length}\n    ]], labels: ['Strong', 'Medium', 'Weak'] } }\n];",
+    "outputs": 5,
+    "noerr": 0,
+    "initialize": "context.set('history', []);",
+    "finalize": "",
+    "libs": [],
+    "x": 820,
+    "y": 180,
+    "wires": [
+      [
+        "ui_text_avg"
+      ],
+      [
+        "ui_text_min"
+      ],
+      [
+        "ui_text_max"
+      ],
+      [
+        "ui_text_trend"
+      ],
+      [
+        "ui_chart_distribution"
+      ]
+    ]
+  },
+  {
+    "id": "ui_gauge_rssi",
+    "type": "ui_gauge",
+    "z": "tab_rssi_twin",
+    "name": "RSSI Gauge",
+    "group": "ui_group_live",
+    "order": 1,
+    "width": "6",
+    "height": "4",
+    "gtype": "gage",
+    "title": "Current RSSI",
+    "label": "dBm",
+    "format": "{{value}}",
+    "min": "-100",
+    "max": "-30",
+    "colors": [
+      "#ff4d4f",
+      "#faad14",
+      "#52c41a"
+    ],
+    "seg1": "-70",
+    "seg2": "-55",
+    "className": ""
+  },
+  {
+    "id": "ui_text_quality",
+    "type": "ui_text",
+    "z": "tab_rssi_twin",
+    "group": "ui_group_live",
+    "order": 2,
+    "width": "3",
+    "height": "1",
+    "name": "Signal Quality",
+    "label": "Quality",
+    "format": "{{msg.payload}}",
+    "layout": "row-spread",
+    "className": ""
+  },
+  {
+    "id": "ui_text_alert",
+    "type": "ui_text",
+    "z": "tab_rssi_twin",
+    "group": "ui_group_live",
+    "order": 3,
+    "width": "3",
+    "height": "1",
+    "name": "Alert Status",
+    "label": "Alert",
+    "format": "{{msg.payload}}",
+    "layout": "row-spread",
+    "className": ""
+  },
+  {
+    "id": "ui_text_status",
+    "type": "ui_text",
+    "z": "tab_rssi_twin",
+    "group": "ui_group_live",
+    "order": 4,
+    "width": "12",
+    "height": "1",
+    "name": "Live Status Line",
+    "label": "Status",
+    "format": "{{msg.payload}}",
+    "layout": "col-center",
+    "className": ""
+  },
+  {
+    "id": "ui_chart_rssi",
+    "type": "ui_chart",
+    "z": "tab_rssi_twin",
+    "name": "RSSI Time Series",
+    "group": "ui_group_chart",
+    "order": 1,
+    "width": "12",
+    "height": "6",
+    "label": "RSSI Over Time",
+    "chartType": "line",
+    "legend": "false",
+    "xformat": "HH:mm:ss",
+    "interpolate": "linear",
+    "nodata": "Waiting for RSSI data...",
+    "dot": false,
+    "ymin": "-100",
+    "ymax": "-30",
+    "removeOlder": "1",
+    "removeOlderPoints": "",
+    "removeOlderUnit": "3600",
+    "cutout": 0,
+    "useOneColor": false,
+    "useUTC": false,
+    "colors": [
+      "#1f77b4",
+      "#aec7e8",
+      "#ff7f0e"
+    ],
+    "outputs": 1,
+    "useDifferentColor": false,
+    "className": ""
+  },
+  {
+    "id": "ui_text_avg",
+    "type": "ui_text",
+    "z": "tab_rssi_twin",
+    "group": "ui_group_stats",
+    "order": 1,
+    "width": "3",
+    "height": "1",
+    "name": "Average RSSI",
+    "label": "Average",
+    "format": "{{msg.payload}} dBm",
+    "layout": "row-spread",
+    "className": ""
+  },
+  {
+    "id": "ui_text_min",
+    "type": "ui_text",
+    "z": "tab_rssi_twin",
+    "group": "ui_group_stats",
+    "order": 2,
+    "width": "3",
+    "height": "1",
+    "name": "Minimum RSSI",
+    "label": "Minimum",
+    "format": "{{msg.payload}} dBm",
+    "layout": "row-spread",
+    "className": ""
+  },
+  {
+    "id": "ui_text_max",
+    "type": "ui_text",
+    "z": "tab_rssi_twin",
+    "group": "ui_group_stats",
+    "order": 3,
+    "width": "3",
+    "height": "1",
+    "name": "Maximum RSSI",
+    "label": "Maximum",
+    "format": "{{msg.payload}} dBm",
+    "layout": "row-spread",
+    "className": ""
+  },
+  {
+    "id": "ui_text_trend",
+    "type": "ui_text",
+    "z": "tab_rssi_twin",
+    "group": "ui_group_stats",
+    "order": 4,
+    "width": "3",
+    "height": "1",
+    "name": "Trend State",
+    "label": "Trend",
+    "format": "{{msg.payload}}",
+    "layout": "row-spread",
+    "className": ""
+  },
+  {
+    "id": "ui_chart_distribution",
+    "type": "ui_chart",
+    "z": "tab_rssi_twin",
+    "name": "State Distribution",
+    "group": "ui_group_stats",
+    "order": 5,
+    "width": "12",
+    "height": "5",
+    "label": "Signal State Distribution (Last 60 Samples)",
+    "chartType": "bar",
+    "legend": "false",
+    "xformat": "auto",
+    "interpolate": "linear",
+    "nodata": "Waiting for enough samples...",
+    "dot": false,
+    "ymin": "0",
+    "ymax": "",
+    "removeOlder": "60",
+    "removeOlderPoints": "",
+    "removeOlderUnit": "1",
+    "cutout": 0,
+    "useOneColor": false,
+    "useUTC": false,
+    "colors": [
+      "#52c41a",
+      "#faad14",
+      "#ff4d4f"
+    ],
+    "outputs": 1,
+    "useDifferentColor": false,
+    "className": ""
+  },
+  {
+    "id": "debug_live",
+    "type": "debug",
+    "z": "tab_rssi_twin",
+    "name": "Live Twin State",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": false,
+    "complete": "payload",
+    "targetType": "msg",
+    "statusVal": "",
+    "statusType": "auto",
+    "x": 1090,
+    "y": 100,
+    "wires": []
+  },
+  {
+    "id": "inject_demo",
+    "type": "inject",
+    "z": "tab_rssi_twin",
+    "name": "Demo RSSI Every 2s",
+    "props": [
+      {
+        "p": "payload"
+      }
+    ],
+    "repeat": "2",
+    "crontab": "",
+    "once": true,
+    "onceDelay": "1",
+    "topic": "",
+    "payload": "",
+    "payloadType": "date",
+    "x": 150,
+    "y": 180,
+    "wires": [
+      [
+        "generate_demo_rssi"
+      ]
+    ]
+  },
+  {
+    "id": "generate_demo_rssi",
+    "type": "function",
+    "z": "tab_rssi_twin",
+    "name": "Generate Demo RSSI",
+    "func": "let base = -62;\nlet noise = Math.round((Math.random() * 16) - 8);\nmsg.payload = base + noise;\nreturn msg;",
+    "outputs": 1,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 360,
+    "y": 180,
+    "wires": [
+      [
+        "normalize_payload"
+      ]
+    ]
+  },
+  {
+    "id": "comment_import",
+    "type": "comment",
+    "z": "tab_rssi_twin",
+    "name": "Disable the demo injector when real ESP32 MQTT data is active",
+    "info": "Topic expected from ESP32: esp32/rssi",
+    "x": 280,
+    "y": 240,
+    "wires": []
+  }
+]
