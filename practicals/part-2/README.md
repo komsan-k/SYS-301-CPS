@@ -53,24 +53,24 @@ Classifier       : Argmax
 
 # 6. Mathematical Model
 ## Normalization
-\[
+$$
 x = \frac{RSSI + 90}{60}
-\]
+$$
 
 ## Hidden Layer
-\[
+$$
 h_i = ReLU(w_i x + b_i)
-\]
+$$
 
 ## Output Layer
-\[
+$$
 y_k = \sum_{i=1}^{8} W_{ki}h_i + b_k
-\]
+$$
 
 ## Classification
-\[
+$$
 \hat{c}=\arg\max(y_k)
-\]
+$$
 
 ---
 
