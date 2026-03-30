@@ -111,9 +111,9 @@ Argmax
 
 Normalize RSSI from **−90 dBm to −30 dBm**
 
-[
+$$
 x = \frac{RSSI + 90}{60}
-]
+$$
 
 Examples:
 
