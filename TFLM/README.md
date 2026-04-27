@@ -1,4 +1,4 @@
-# 📘 Lab 5: TFLM - LDR Light Classification on ESP32
+# 📘 Lab: TFLM - LDR Light Classification on ESP32
 
 ## 🎯 Objectives
 - Understand TinyML inference on microcontrollers
@@ -113,5 +113,3 @@ Inference time: ~400 µs
 - Understand CPS + TinyML
 - Build real-time AI systems
 
-## 🧭 Next Lab
-Lab 6: TinyML + MQTT + Node-RED Digital Twin
